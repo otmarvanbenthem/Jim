@@ -152,3 +152,4 @@ dagster_tmp/*
 
 # Zensical generated files
 _zensical_build.toml
+.env
