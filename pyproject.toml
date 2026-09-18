@@ -49,7 +49,9 @@ jim-run = "jimgw.cli:app"
 cuda = [
     "jax[cuda]>=0.8.2",
 ]
-
+rocm = [
+    "jax[rocm7-local]>=0.8.2",
+]
 [dependency-groups]
 test = [
     "pre-commit>=4.2.0",
