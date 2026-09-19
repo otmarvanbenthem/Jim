@@ -34,6 +34,7 @@ dependencies = [
     "jaxtyping>=0.3.3",
     "matplotlib>=3.10.7",
     "numpy>=1.26",
+    "pip>=26.2.1",
     "pydantic>=2",
     "requests>=2.32.3",
     "ripplegw>=0.4.0",
@@ -52,6 +53,7 @@ cuda = [
 rocm = [
     "jax[rocm7-local]>=0.8.2",
 ]
+
 [dependency-groups]
 test = [
     "pre-commit>=4.2.0",
@@ -132,3 +134,5 @@ exclude_also = [
     "raise NotImplementedError",
     "@(abc\\. )?abstractmethod",
 ]
+
+

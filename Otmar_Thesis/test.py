@@ -1,8 +1,34 @@
+import os
+import shutil
+import sys
+# 1. Detect if running on local AMD/ROCm machine
+has_rocm = shutil.which("rocminfo") is not None or os.path.exists("/opt/rocm")
+
+# If on local ROCm machine and SDMA isn't disabled yet, set vars and relaunch
+if has_rocm:
+ #   os.environ["HSA_OVERRIDE_GFX_VERSION"] = "12.0.0"
+   os.environ["XLA_FLAGS"] = "--xla_gpu_autotune_level=0"
+   
+    #os.environ["HSA_ENABLE_SDMA"] = "0"
+  # os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
+   # os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.8"   
+   # print("Using AMD home GPU (rx 9060xt)")
+   print('Running JimGW on cpu')
+
+else:
+    print('Using Nvidia GPU')
+
+
 import logging
 import warnings
 import jax
 
-jax.config.update("jax_enable_x64", True)
+
+
+
+
+
+jax.config.update("jax_enable_x64", True) 
 logging.getLogger("flowMC").setLevel(logging.WARNING)
 warnings.filterwarnings("ignore", "Wswiglal-redir-stdio")
 
@@ -85,7 +111,7 @@ jim = Jim(
     likelihood,
     prior,
     sampler_config=FlowMCConfig(
-        n_chains=100,
+        n_chains=50,
         n_local_steps=50,
         n_global_steps=100,
         n_training_loops=5,
