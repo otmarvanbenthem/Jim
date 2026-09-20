@@ -1,0 +1,285 @@
+#To determine correct use of GPU, since I will be working on my home pc and Snellius
+import os
+import shutil
+import sys
+# 1. Detect if running on local AMD/ROCm machine
+has_rocm = shutil.which("rocminfo") is not None or os.path.exists("/opt/rocm")
+
+# If on local ROCm machine and SDMA isn't disabled yet, set vars and relaunch
+if has_rocm:
+   os.environ["XLA_FLAGS"] = "--xla_gpu_enable_command_buffer= --xla_gpu_enable_triton_gemm=false" 
+   #os.environ["HIP_VISIBLE_DEVICES"] = "0"
+   print('Using AMD GPU')
+
+#If on Snellius
+else:
+    print('Using Nvidia GPU')
+
+#Rest of code
+#To start the project, we will use NS AW as our sampler. Most if not all, will be copied from GW150914_NS_AW.py
+#Also using the guides
+
+import time
+from pathlib import Path
+
+import corner
+import numpy as np
+import jax
+import jax.numpy as jnp
+
+jax.config.update("jax_enable_x64", True)
+
+from jimgw.core.jim import Jim
+from jimgw.core.prior import (
+    CombinePrior,
+    UniformPrior,
+    CosinePrior,
+    SinePrior,
+    PowerLawPrior,
+)
+from jimgw.core.single_event.detector import get_H1, get_L1, get_V1 # Added 'get_V1()'
+from jimgw.core.single_event.likelihood import TransientLikelihoodFD
+from jimgw.core.single_event.data import Data
+from jimgw.core.single_event.waveform import RippleIMRPhenomXAS
+from jimgw.core.single_event.transforms import (
+    MassRatioToSymmetricMassRatioTransform,
+    GeocentricArrivalTimeToDetectorArrivalTimeTransform,
+    SkyFrameToDetectorFrameSkyPositionTransform,
+)
+from jimgw.core.single_event.data import PowerSpectrum
+import jax.numpy as jnp
+from jimgw.core.single_event.data import Data
+from jimgw.core.single_event.detector import get_detector_preset
+from jimgw.core.transforms import (
+    BoundToBound,
+    CosineTransform,
+    PowerLawTransform,
+    reverse_bijective_transform,
+)
+from jimgw.samplers.config import BlackJAXNSAWConfig
+
+
+
+
+# --- Waveform model ---
+waveform = RippleIMRPhenomXAS(f_ref=20)
+
+# --- Injection simulated signal ---
+
+gps =  time.time() - 1000
+q = 0.85
+injection_parameters = {
+"M_c"     : 28.3,
+"q"       : 0.85,
+"eta"     : q / (1 + q) ** 2,
+"s1_z"    : 0.3,
+"s2_z"   : -0.2,
+"iota"    : 0.4,
+"d_L"     : 440.0,
+"t_c"     : 0.03,
+"phase_c" : 0.5,
+"psi"     : 0.1,
+"ra"      : 1.375,
+"dec"     : -1.21,
+}
+
+ifos = [get_H1(), get_L1(), get_V1()]
+fmin = 20.0
+fmax = 1024.0
+duration = 4.0
+sampling_frequency = 2 * fmax
+
+ifos = [get_H1(), get_L1(), get_V1()]
+for ifo in ifos:
+    ifo.load_and_set_psd()
+    ifo.inject_signal(
+        duration,
+        sampling_frequency,
+        trigger_time=gps,
+        waveform_model=waveform,
+        parameters=injection_parameters,
+        f_min=fmin,
+        f_max=fmax,
+        zero_noise=False,
+    )
+
+# --- Prior ---
+
+M_c_min, M_c_max = 20.0, 40.0
+q_min, q_max = 0.125, 1.0
+d_L_min, d_L_max = 1.0, 2000.0
+t_det_min, t_det_max = -0.1, 0.1
+
+prior = CombinePrior(
+    [
+        UniformPrior(M_c_min, M_c_max, parameter_names=["M_c"]),
+        UniformPrior(q_min, q_max, parameter_names=["q"]),
+        UniformPrior(-0.99, 0.99, parameter_names=["s1_z"]),
+        UniformPrior(-0.99, 0.99, parameter_names=["s2_z"]),
+        SinePrior(parameter_names=["iota"]),
+        PowerLawPrior(d_L_min, d_L_max, 2.0, parameter_names=["d_L"]),
+        UniformPrior(t_det_min, t_det_max, parameter_names=["t_det"]),
+        UniformPrior(0.0, jnp.pi, parameter_names=["psi"]),
+        UniformPrior(0.0, 2 * jnp.pi, parameter_names=["ra"]),
+        CosinePrior(parameter_names=["dec"]),
+    ]
+)
+
+# --- Transforms ---
+#
+# Each parameter is mapped to [0, 1].  Transform patterns:
+#   Uniform [a, b]           → BoundToBound([a, b] → [0, 1])
+#   SinePrior  [0, π]        → CosineTransform → BoundToBound([-1, 1] → [0, 1])
+#   PowerLawPrior (α=2)      → reverse_bijective_transform(PowerLawTransform)
+
+sample_transforms = [
+    SkyFrameToDetectorFrameSkyPositionTransform(trigger_time=gps, ifos=ifos),
+    # Masses
+    BoundToBound(
+        name_mapping=(["M_c"], ["M_c_unit"]),
+        original_lower_bound=M_c_min,
+        original_upper_bound=M_c_max,
+        target_lower_bound=0.0,
+        target_upper_bound=1.0,
+    ),
+    BoundToBound(
+        name_mapping=(["q"], ["q_unit"]),
+        original_lower_bound=q_min,
+        original_upper_bound=q_max,
+        target_lower_bound=0.0,
+        target_upper_bound=1.0,
+    ),
+    # Spin 1
+    BoundToBound(
+        name_mapping=(["s1_z"], ["s1_z_unit"]),
+        original_lower_bound=-0.99,
+        original_upper_bound=0.99,
+        target_lower_bound=0.0,
+        target_upper_bound=1.0,
+    ),
+    # Spin 2
+    BoundToBound(
+        name_mapping=(["s2_z"], ["s2_z_unit"]),
+        original_lower_bound=-0.99,
+        original_upper_bound=0.99,
+        target_lower_bound=0.0,
+        target_upper_bound=1.0,
+    ),
+    # Inclination (SinePrior → cosine)
+    CosineTransform(name_mapping=(["iota"], ["cos_iota"])),
+    BoundToBound(
+        name_mapping=(["cos_iota"], ["cos_iota_unit"]),
+        original_lower_bound=-1.0,
+        original_upper_bound=1.0,
+        target_lower_bound=0.0,
+        target_upper_bound=1.0,
+    ),
+    # Luminosity distance (PowerLawPrior α=2 → unit cube)
+    reverse_bijective_transform(
+        PowerLawTransform(
+            name_mapping=(["d_L_unit"], ["d_L"]),
+            xmin=d_L_min,
+            xmax=d_L_max,
+            alpha=2.0,
+        )
+    ),
+    # Coalescence time
+    BoundToBound(
+        name_mapping=(["t_det"], ["t_det_unit"]),
+        original_lower_bound=t_det_min,
+        original_upper_bound=t_det_max,
+        target_lower_bound=0.0,
+        target_upper_bound=1.0,
+    ),
+    # Polarization angle
+    BoundToBound(
+        name_mapping=(["psi"], ["psi_unit"]),
+        original_lower_bound=0.0,
+        original_upper_bound=jnp.pi,
+        target_lower_bound=0.0,
+        target_upper_bound=1.0,
+    ),
+    # Sky position — azimuth and zenith
+    BoundToBound(
+        name_mapping=(["azimuth"], ["azimuth_unit"]),
+        original_lower_bound=0.0,
+        original_upper_bound=2 * jnp.pi,
+        target_lower_bound=0.0,
+        target_upper_bound=1.0,
+    ),
+    CosineTransform(name_mapping=(["zenith"], ["cos_zenith"])),
+    BoundToBound(
+        name_mapping=(["cos_zenith"], ["cos_zenith_unit"]),
+        original_lower_bound=-1.0,
+        original_upper_bound=1.0,
+        target_lower_bound=0.0,
+        target_upper_bound=1.0,
+    ),
+]
+
+likelihood_transforms = [
+    MassRatioToSymmetricMassRatioTransform,
+    reverse_bijective_transform(
+        GeocentricArrivalTimeToDetectorArrivalTimeTransform(
+            trigger_time=gps, ifo=ifos[0]
+        )# Not sure if 'ifos=ifos[0]' is correct when adding get_V1()
+    ),
+]
+
+# --- Likelihood ---
+
+likelihood = TransientLikelihoodFD(
+    ifos,
+    waveform=waveform,
+    trigger_time=gps,
+    f_min=fmin,
+    f_max=fmax,
+    phase_marginalization=True,
+)
+
+# --- Sample ---
+
+jim = Jim(
+    likelihood,
+    prior,
+    sample_transforms=sample_transforms,
+    likelihood_transforms=likelihood_transforms,
+    periodic=["psi_unit", "azimuth_unit"],
+    sampler_config=BlackJAXNSAWConfig(
+        n_live=1000,
+        n_delete_frac=0.5,
+        n_target=60,
+    ),
+)
+
+start_time = time.time()
+jim.sample()
+end_time = time.time()
+print(f"Sampling took {(end_time - start_time) / 60:.2f} mins")
+
+# --- Results ---
+
+diagnostics = jim.get_diagnostics()
+print(f"log Z = {diagnostics['log_Z']:.2f} ± {diagnostics['log_Z_error']:.2f}")
+print(f"Likelihood evaluations: {diagnostics['n_likelihood_evaluations']:,}")
+
+chains = jim.get_samples()
+
+parameter_labels = {
+    "M_c": r"$\mathcal{M}_c\,[M_\odot]$",
+    "q": r"$q$",
+    "s1_z": r"$s_{1,z}$",
+    "s2_z": r"$s_{2,z}$",
+    "iota": r"$\iota$",
+    "d_L": r"$d_L\,[\mathrm{Mpc}]$",
+    "t_det": r"$t_{\mathrm{det}}\,[\mathrm{s}]$",
+    "psi": r"$\psi$",
+    "ra": r"$\alpha$",
+    "dec": r"$\delta$",
+}
+
+fig = corner.corner(
+    np.stack([chains[key] for key in jim.prior.parameter_names]).T,
+    labels=[parameter_labels.get(k, k) for k in jim.prior.parameter_names],
+)
+fig.savefig(Path(__file__).parent / "GW150914_NS_AW_TEST_OTMAR.png")

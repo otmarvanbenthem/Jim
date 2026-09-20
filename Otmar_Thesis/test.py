@@ -6,16 +6,11 @@ has_rocm = shutil.which("rocminfo") is not None or os.path.exists("/opt/rocm")
 
 # If on local ROCm machine and SDMA isn't disabled yet, set vars and relaunch
 if has_rocm:
-   os.environ["XLA_FLAGS"] = "--xla_gpu_enable_command_buffer="
- #  os.environ["HSA_OVERRIDE_GFX_VERSION"] = "12.0.0"
-  # os.environ["XLA_FLAGS"] = "--xla_gpu_autotune_level=0"
-   
-    #os.environ["HSA_ENABLE_SDMA"] = "0"
+   os.environ["XLA_FLAGS"] = "--xla_gpu_enable_command_buffer=" #Fixed memory issue
    os.environ["XLA_PYTHON_CLIENT_PREALLOCATE"] = "false"
-   #os.environ["XLA_PYTHON_CLIENT_MEM_FRACTION"] = "0.6"   
-   
    print('Using AMD GPU')
 
+#If on Snellius
 else:
     print('Using Nvidia GPU')
 
@@ -23,10 +18,6 @@ else:
 import logging
 import warnings
 import jax
-
-
-
-
 
 
 jax.config.update("jax_enable_x64", True) 
