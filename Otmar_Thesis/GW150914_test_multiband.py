@@ -140,7 +140,7 @@ likelihood = MultibandedTransientLikelihoodFD(
     f_max=fmax,
     trigger_time=gps,
     prior=prior,
-    time_offset=0.1,
+    time_offset=0.1, #not sure what this does but did help with memory
 )
 
 print("multiband done")
@@ -199,4 +199,4 @@ fig = corner.corner(
     np.stack([chains[key] for key in jim.prior.parameter_names]).T[::10],
     labels=[parameter_labels.get(k, k) for k in jim.prior.parameter_names],
 )
-fig.savefig(Path(__file__).parent / "GW150914_multiband.png")
+fig.savefig(Path(__file__).parent / "GW150914_multiband_Otmar.png")

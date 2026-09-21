@@ -9,7 +9,7 @@ has_rocm = shutil.which("rocminfo") is not None or os.path.exists("/opt/rocm")
 if has_rocm:
    os.environ["XLA_FLAGS"] = "--xla_gpu_enable_command_buffer= --xla_gpu_enable_triton_gemm=false" 
    os.environ["HSA_ENABLE_SDMA"] = "0"
-   os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = "platform"
+   os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = "platform" #not sure what this does but helped
    print('Using AMD GPU')
 
 #If on Snellius
@@ -286,4 +286,4 @@ fig = corner.corner(
     np.stack([chains[key] for key in jim.prior.parameter_names]).T,
     labels=[parameter_labels.get(k, k) for k in jim.prior.parameter_names],
 )
-fig.savefig(Path(__file__).parent / "GW150914_NS_AW_TEST_OTMAR.png")
+fig.savefig(Path(__file__).parent / "GW150914_NS_AW_Multiband_otmar.png")

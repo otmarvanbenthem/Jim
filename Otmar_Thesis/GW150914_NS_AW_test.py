@@ -282,4 +282,4 @@ fig = corner.corner(
     np.stack([chains[key] for key in jim.prior.parameter_names]).T,
     labels=[parameter_labels.get(k, k) for k in jim.prior.parameter_names],
 )
-fig.savefig(Path(__file__).parent / "GW150914_NS_AW_TEST_OTMAR.png")
+fig.savefig(Path(__file__).parent / "GW150914_NS_AW_OTMAR.png")
