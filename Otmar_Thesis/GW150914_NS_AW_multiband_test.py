@@ -82,7 +82,7 @@ injection_parameters = {
 
 
 fmin = 20.0
-fmax = 512.0
+fmax = 1024.0
 duration = 4.0
 sampling_frequency = 2 * fmax
 
@@ -249,9 +249,9 @@ jim = Jim(
     likelihood_transforms=likelihood_transforms,
     periodic=["psi_unit", "azimuth_unit","phase_c_unit"],
     sampler_config=BlackJAXNSAWConfig(
-        n_live=1000,
+        n_live=500,
         n_delete_frac=0.5,
-        n_target=60,
+        n_target=30,
     ),
 )
 
@@ -281,9 +281,12 @@ parameter_labels = {
     "lambda_1": r"$\Lambda_1$",
     "lambda_2": r"$\Lambda_2$",
 }
-
+#%%
+print("plotting")
 fig = corner.corner(
     np.stack([chains[key] for key in jim.prior.parameter_names]).T,
     labels=[parameter_labels.get(k, k) for k in jim.prior.parameter_names],
 )
-fig.savefig(Path(__file__).parent / "GW150914_NS_AW_Multiband_otmar.png")
+fig.savefig(Path(__file__).parent / "GW150914_NS_AW_Multiband_OTMAR.png")
+
+# %%

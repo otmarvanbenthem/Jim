@@ -8,7 +8,8 @@ has_rocm = shutil.which("rocminfo") is not None or os.path.exists("/opt/rocm")
 # If on local ROCm machine and SDMA isn't disabled yet, set vars and relaunch
 if has_rocm:
    os.environ["XLA_FLAGS"] = "--xla_gpu_enable_command_buffer= --xla_gpu_enable_triton_gemm=false" 
-   #os.environ["HIP_VISIBLE_DEVICES"] = "0"
+   os.environ["HSA_ENABLE_SDMA"] = "0"
+   os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = "platform" 
    print('Using AMD GPU')
 
 #If on Snellius
@@ -66,7 +67,7 @@ waveform = RippleIMRPhenomXAS(f_ref=20)
 
 # --- Injection simulated signal ---
 
-gps =  time.time() - 1000
+gps =  time.time() - 10000
 q = 0.85
 injection_parameters = {
 "M_c"     : 28.3,
@@ -85,7 +86,7 @@ injection_parameters = {
 
 ifos = [get_H1(), get_L1(), get_V1()]
 fmin = 20.0
-fmax = 1024.0
+fmax = 1024
 duration = 4.0
 sampling_frequency = 2 * fmax
 
@@ -246,9 +247,9 @@ jim = Jim(
     likelihood_transforms=likelihood_transforms,
     periodic=["psi_unit", "azimuth_unit"],
     sampler_config=BlackJAXNSAWConfig(
-        n_live=1000,
+        n_live=500,
         n_delete_frac=0.5,
-        n_target=60,
+        n_target=30,
     ),
 )
 

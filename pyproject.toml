@@ -75,6 +75,7 @@ doc = [
     "zensical",
 ]
 dev = [
+    "ipykernel>=7.3.0",
     "ipython>=9.17.1",
 ]
 [project.urls]
