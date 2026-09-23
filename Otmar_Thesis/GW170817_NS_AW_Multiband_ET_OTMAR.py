@@ -40,7 +40,7 @@ from jimgw.core.prior import (
     SinePrior,
     PowerLawPrior,
 )
-from jimgw.core.single_event.detector import get_H1, get_L1, get_V1
+from jimgw.core.single_event.detector import get_ET
 from jimgw.core.single_event.likelihood import MultibandedTransientLikelihoodFD
 from jimgw.core.single_event.data import Data
 from jimgw.core.single_event.waveform import RippleIMRPhenomXAS
@@ -66,29 +66,36 @@ waveform = RippleIMRPhenomXAS(f_ref=20)
 # --- Injection simulated signal ---
 
 gps =  time.time() - 10000
-q = 0.85
+t_det_min, t_det_max = -0.1, 0.1
 injection_parameters = {
-"M_c"     : 1.186,
-"q"       : 0.85,
-"eta"     : q / (1 + q) ** 2,
-"s1_z"    : 0.3,
-"s2_z"   : -0.2,
-"iota"    : 0.4,
-"d_L"     : 40.0,
-"t_c"     : 0.03,
-"phase_c" : 0.5,
-"psi"     : 0.1,
-"ra"      : 1.375,
-"dec"     : -1.21,
+    # Mass & Spin parameters
+    "M_c": 1.186,          # Chirp mass (solar masses)
+    "eta": 0.248,          # Symmetric mass ratio
+    "s1_z": 0.005,         # Primary dimensionless spin
+    "s2_z": 0.005,         # Secondary dimensionless spin
+
+    # Extrinsic parameters
+    "ra": 3.446,           # Right ascension (rad)
+    "dec": -0.408,         # Declination (rad)
+    "psi": 1.75,           # Polarization angle (rad)
+    "d_L": 40.0,           # Luminosity distance (Mpc)
+    "iota": 2.53,          # Inclination angle (rad)
+    "phase_c": 0.0,        # Coalescence phase (rad)
+    "t_c": 0.0,            # Geocentric trigger time shift (s)
+
+    # Tidal deformation parameters (Option A: Component-wise)
+    "lambda_1": 300.0,     # Primary dimensionless tidal deformability (m1 ~ 1.46 M_sun)
+    "lambda_2": 450.0,     # Secondary dimensionless tidal deformability (m2 ~ 1.27 M_sun)
+
 }
 
 
-fmin = 20.0
-fmax = 1024.0
-duration = 4.0
+fmin = 5.0
+fmax = 2048
+duration = 128
 sampling_frequency = 2 * fmax
 
-ifos = [get_H1(), get_L1(), get_V1()]
+ifos = get_ET()
 for ifo in ifos:
     ifo.load_and_set_psd()
     ifo.inject_signal(
@@ -104,27 +111,25 @@ for ifo in ifos:
 print("injection done")
 # --- Prior ---
 
-M_c_min, M_c_max = 20.0, 40.0
-q_min, q_max = 0.125, 1.0
-d_L_min, d_L_max = 1.0, 2000.0
-t_det_min, t_det_max = -0.1, 0.1
+
 
 prior = CombinePrior(
     [
-        UniformPrior(M_c_min, M_c_max, parameter_names=["M_c"]),
-        UniformPrior(q_min, q_max, parameter_names=["q"]),
-        UniformPrior(-0.99, 0.99, parameter_names=["s1_z"]),
-        UniformPrior(-0.99, 0.99, parameter_names=["s2_z"]),
+        UniformPrior(1.170, 1.200, parameter_names=["M_c"]),
+        UniformPrior(0.125, 1.0, parameter_names=["q"]),
+        UniformPrior(-0.05, 0.05, parameter_names=["s1_z"]),
+        UniformPrior(-0.05, 0.05, parameter_names=["s2_z"]),
         SinePrior(parameter_names=["iota"]),
-        PowerLawPrior(d_L_min, d_L_max, 2.0, parameter_names=["d_L"]),
-        UniformPrior(t_det_min, t_det_max, parameter_names=["t_det"]),
+        PowerLawPrior(1.0, 100.0, 2.0, parameter_names=["d_L"]),
+        UniformPrior(-0.1, 0.1, parameter_names=["t_c"]),
+        UniformPrior(0.0, 2 * jnp.pi, parameter_names=["phase_c"]),
         UniformPrior(0.0, jnp.pi, parameter_names=["psi"]),
         UniformPrior(0.0, 2 * jnp.pi, parameter_names=["ra"]),
         CosinePrior(parameter_names=["dec"]),
-        UniformPrior(0.0, 2 * jnp.pi, parameter_names=["phase_c"]),
+        UniformPrior(0.0, 5000.0, parameter_names=["lambda_1"]),
+        UniformPrior(0.0, 5000.0, parameter_names=["lambda_2"]),
     ]
 )
-
 print("prior done")
 # --- Transforms ---
 
@@ -133,15 +138,15 @@ sample_transforms = [
     # Masses
     BoundToBound(
         name_mapping=(["M_c"], ["M_c_unit"]),
-        original_lower_bound=M_c_min,
-        original_upper_bound=M_c_max,
+        original_lower_bound=1.170,
+        original_upper_bound=1.200,
         target_lower_bound=0.0,
         target_upper_bound=1.0,
     ),
     BoundToBound(
         name_mapping=(["q"], ["q_unit"]),
-        original_lower_bound=q_min,
-        original_upper_bound=q_max,
+        original_lower_bound=0.125,
+        original_upper_bound=1.0,
         target_lower_bound=0.0,
         target_upper_bound=1.0,
     ),
@@ -174,8 +179,8 @@ sample_transforms = [
     reverse_bijective_transform(
         PowerLawTransform(
             name_mapping=(["d_L_unit"], ["d_L"]),
-            xmin=d_L_min,
-            xmax=d_L_max,
+            xmin=1.0,
+            xmax=100.0,
             alpha=2.0,
         )
     ),
@@ -279,8 +284,8 @@ parameter_labels = {
     "psi": r"$\psi$",
     "ra": r"$\alpha$",
     "dec": r"$\delta$",
-   # "lambda_1": r"$\Lambda_1$",
-    #"lambda_2": r"$\Lambda_2$",
+    "lambda_1": r"$\Lambda_1$",
+    "lambda_2": r"$\Lambda_2$",
 }
 #%%
 print("plotting")
