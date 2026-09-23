@@ -279,8 +279,8 @@ parameter_labels = {
     "psi": r"$\psi$",
     "ra": r"$\alpha$",
     "dec": r"$\delta$",
-    "lambda_1": r"$\Lambda_1$",
-    "lambda_2": r"$\Lambda_2$",
+   # "lambda_1": r"$\Lambda_1$",
+    #"lambda_2": r"$\Lambda_2$",
 }
 #%%
 print("plotting")
