@@ -68,13 +68,13 @@ waveform = RippleIMRPhenomXAS(f_ref=20)
 gps =  time.time() - 10000
 q = 0.85
 injection_parameters = {
-"M_c"     : 28.3,
+"M_c"     : 1.186,
 "q"       : 0.85,
 "eta"     : q / (1 + q) ** 2,
 "s1_z"    : 0.3,
 "s2_z"   : -0.2,
 "iota"    : 0.4,
-"d_L"     : 440.0,
+"d_L"     : 40.0,
 "t_c"     : 0.03,
 "phase_c" : 0.5,
 "psi"     : 0.1,
@@ -279,8 +279,8 @@ parameter_labels = {
     "psi": r"$\psi$",
     "ra": r"$\alpha$",
     "dec": r"$\delta$",
-    "lambda_1": r"$\Lambda_1$",
-    "lambda_2": r"$\Lambda_2$",
+   # "lambda_1": r"$\Lambda_1$",
+    #"lambda_2": r"$\Lambda_2$",
 }
 #%%
 print("plotting")
@@ -288,6 +288,6 @@ fig = corner.corner(
     np.stack([chains[key] for key in jim.prior.parameter_names]).T,
     labels=[parameter_labels.get(k, k) for k in jim.prior.parameter_names],
 )
-fig.savefig(Path(__file__).parent / "GW150914_NS_AW_Multiband_OTMAR.png")
+fig.savefig(Path(__file__).parent / "GW170817_NS_AW_Multiband_ET_OTMAR.png")
 
 # %%
