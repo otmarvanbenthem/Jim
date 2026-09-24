@@ -7,10 +7,10 @@ has_rocm = shutil.which("rocminfo") is not None or os.path.exists("/opt/rocm")
 
 # If on local ROCm machine and SDMA isn't disabled yet, set vars and relaunch
 if has_rocm:
-   os.environ["XLA_FLAGS"] = "--xla_gpu_enable_command_buffer= --xla_gpu_enable_triton_gemm=false" 
-   os.environ["HSA_ENABLE_SDMA"] = "0"
-   os.environ["HIP_VISIBLE_DEVICES"] = "0"
-   os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = "platform" #not sure what this does but helped
+  # os.environ["XLA_FLAGS"] = "--xla_gpu_enable_command_buffer= --xla_gpu_enable_triton_gemm=false" 
+  # os.environ["HSA_ENABLE_SDMA"] = "0"
+  #os.environ["HIP_VISIBLE_DEVICES"] = "0"
+ #  os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = "platform" #not sure what this does but helped
    print('Using AMD GPU')
 
 
@@ -43,7 +43,7 @@ from jimgw.core.prior import (
 from jimgw.core.single_event.detector import get_ET
 from jimgw.core.single_event.likelihood import MultibandedTransientLikelihoodFD
 from jimgw.core.single_event.data import Data
-from jimgw.core.single_event.waveform import RippleIMRPhenomXAS
+from jimgw.core.single_event.waveform import RippleIMRPhenomD_NRTidalv2
 from jimgw.core.single_event.transforms import (
     SkyFrameToDetectorFrameSkyPositionTransform,
     MassRatioToSymmetricMassRatioTransform,
@@ -55,17 +55,19 @@ from jimgw.core.transforms import (
     PowerLawTransform,
     reverse_bijective_transform,
 )
+from jimgw.core.single_event.data import PowerSpectrum
+
 from jimgw.samplers.config import BlackJAXNSAWConfig
 
 
 # --- Fetch data ---
 
 # --- Waveform model ---
-waveform = RippleIMRPhenomXAS(f_ref=20)
+waveform = RippleIMRPhenomD_NRTidalv2(f_ref=5.0)
 
 # --- Injection simulated signal ---
 
-gps =  time.time() - 10000
+gps =  1766797218
 t_det_min, t_det_max = -0.1, 0.1
 injection_parameters = {
     # Mass & Spin parameters
@@ -97,7 +99,7 @@ sampling_frequency = 2 * fmax
 
 ifos = get_ET()
 for ifo in ifos:
-    ifo.load_and_set_psd()
+    ifo.set_psd(PowerSpectrum.from_file("curves_Jan_2020/et_d.txt", is_asd=True)) #load psd from asd txt file
     ifo.inject_signal(
         duration,
         sampling_frequency,
@@ -117,11 +119,12 @@ prior = CombinePrior(
     [
         UniformPrior(1.170, 1.200, parameter_names=["M_c"]),
         UniformPrior(0.125, 1.0, parameter_names=["q"]),
-        UniformPrior(-0.05, 0.05, parameter_names=["s1_z"]),
-        UniformPrior(-0.05, 0.05, parameter_names=["s2_z"]),
+        UniformPrior(-0.99, 0.99, parameter_names=["s1_z"]),
+        UniformPrior(-0.99, 0.99
+                     , parameter_names=["s2_z"]),
         SinePrior(parameter_names=["iota"]),
         PowerLawPrior(1.0, 100.0, 2.0, parameter_names=["d_L"]),
-        UniformPrior(-0.1, 0.1, parameter_names=["t_c"]),
+        UniformPrior(-0.1, 0.1, parameter_names=["t_det"]), #was t_c
         UniformPrior(0.0, 2 * jnp.pi, parameter_names=["phase_c"]),
         UniformPrior(0.0, jnp.pi, parameter_names=["psi"]),
         UniformPrior(0.0, 2 * jnp.pi, parameter_names=["ra"]),
@@ -220,6 +223,21 @@ sample_transforms = [
         name_mapping=(["phase_c"], ["phase_c_unit"]),
         original_lower_bound=0.0,
         original_upper_bound=2 * jnp.pi,
+        target_lower_bound=0.0,
+        target_upper_bound=1.0,
+    ),
+    
+    BoundToBound(
+        name_mapping=(["lambda_1"], ["lambda_1_unit"]),
+        original_lower_bound=0.0,
+        original_upper_bound=5000.0,
+        target_lower_bound=0.0,
+        target_upper_bound=1.0,
+    ),
+    BoundToBound(
+        name_mapping=(["lambda_2"], ["lambda_2_unit"]),
+        original_lower_bound=0.0,
+        original_upper_bound=5000.0,
         target_lower_bound=0.0,
         target_upper_bound=1.0,
     ),
