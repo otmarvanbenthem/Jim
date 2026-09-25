@@ -171,7 +171,7 @@ jim = Jim(
     periodic={
         "psi": (0.0, float(jnp.pi)),
         "phase_c": (0.0, 2 * float(jnp.pi)),
-        "azimuth": (0.0, 2 * float(jnp.pi)),
+        "ra": (0.0, 2 * float(jnp.pi)),
     },
     sampler_config=FlowMCConfig(
         n_chains=1000,
