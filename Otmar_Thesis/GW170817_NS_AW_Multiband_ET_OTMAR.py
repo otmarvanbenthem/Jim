@@ -39,6 +39,7 @@ from jimgw.core.prior import (
     CosinePrior,
     SinePrior,
     PowerLawPrior,
+    SinePrior,
 )
 from jimgw.core.single_event.detector import get_ET
 from jimgw.core.single_event.likelihood import MultibandedTransientLikelihoodFD
@@ -53,6 +54,7 @@ from jimgw.core.transforms import (
     BoundToBound,
     CosineTransform,
     PowerLawTransform,
+    SineTransform,
     reverse_bijective_transform,
 )
 from jimgw.core.single_event.data import PowerSpectrum
@@ -137,7 +139,7 @@ print("prior done")
 # --- Transforms ---
 
 sample_transforms = [
-    SkyFrameToDetectorFrameSkyPositionTransform(trigger_time=gps, ifos=ifos),
+    #SkyFrameToDetectorFrameSkyPositionTransform(trigger_time=gps, ifos=ifos),
     # Masses
     BoundToBound(
         name_mapping=(["M_c"], ["M_c_unit"]),
@@ -203,8 +205,8 @@ sample_transforms = [
         target_lower_bound=0.0,
         target_upper_bound=1.0,
     ),
-
-    #sky position
+    # Sky position — sample ra, dec directly (ET is single-site, so the
+    # detector-frame azimuth/zenith reparametrization doesn't apply)
     BoundToBound(
         name_mapping=(["ra"], ["ra_unit"]),
         original_lower_bound=0.0,
@@ -212,14 +214,15 @@ sample_transforms = [
         target_lower_bound=0.0,
         target_upper_bound=1.0,
     ),
-    CosineTransform(name_mapping=(["dec"], ["cos_dec"])),
+    SineTransform(name_mapping=(["dec"], ["sin_dec"])),
     BoundToBound(
-        name_mapping=(["cos_dec"], ["cos_dec_unit"]),
+        name_mapping=(["sin_dec"], ["sin_dec_unit"]),
         original_lower_bound=-1.0,
         original_upper_bound=1.0,
         target_lower_bound=0.0,
         target_upper_bound=1.0,
     ),
+
     BoundToBound(
         name_mapping=(["phase_c"], ["phase_c_unit"]),
         original_lower_bound=0.0,
@@ -246,7 +249,13 @@ sample_transforms = [
 
 likelihood_transforms = [
     MassRatioToSymmetricMassRatioTransform,
+        reverse_bijective_transform(
+        GeocentricArrivalTimeToDetectorArrivalTimeTransform(
+            trigger_time=gps, ifo=ifos[0]
+        )
+    ),
 ]
+
 
 # --- Likelihood ---
 
@@ -267,7 +276,7 @@ jim = Jim(
     prior,
     sample_transforms=sample_transforms,
     likelihood_transforms=likelihood_transforms,
-    periodic=["psi_unit", "azimuth_unit","phase_c_unit"],
+    periodic=["psi_unit", "ra_unit","phase_c_unit"],
     sampler_config=BlackJAXNSAWConfig(
         n_live=1000,
         n_delete_frac=0.5,
