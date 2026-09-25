@@ -94,7 +94,7 @@ injection_parameters = {
 
 fmin = 5.0
 fmax = 2048
-duration = 128
+duration = 64
 sampling_frequency = 2 * fmax
 
 ifos = get_ET()
@@ -203,17 +203,18 @@ sample_transforms = [
         target_lower_bound=0.0,
         target_upper_bound=1.0,
     ),
-    # Sky position — azimuth and zenith
+
+    #sky position
     BoundToBound(
-        name_mapping=(["azimuth"], ["azimuth_unit"]),
+        name_mapping=(["ra"], ["ra_unit"]),
         original_lower_bound=0.0,
         original_upper_bound=2 * jnp.pi,
         target_lower_bound=0.0,
         target_upper_bound=1.0,
     ),
-    CosineTransform(name_mapping=(["zenith"], ["cos_zenith"])),
+    CosineTransform(name_mapping=(["dec"], ["cos_dec"])),
     BoundToBound(
-        name_mapping=(["cos_zenith"], ["cos_zenith_unit"]),
+        name_mapping=(["cos_dec"], ["cos_dec_unit"]),
         original_lower_bound=-1.0,
         original_upper_bound=1.0,
         target_lower_bound=0.0,
@@ -245,11 +246,6 @@ sample_transforms = [
 
 likelihood_transforms = [
     MassRatioToSymmetricMassRatioTransform,
-    reverse_bijective_transform(
-        GeocentricArrivalTimeToDetectorArrivalTimeTransform(
-            trigger_time=gps, ifo=ifos[0]
-        )# Not sure if 'ifos=ifos[0]' is correct when adding get_V1()
-    ),
 ]
 
 # --- Likelihood ---
