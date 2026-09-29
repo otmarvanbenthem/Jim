@@ -2,17 +2,21 @@ seed = 42
 
 [data]
 type = "injection"
-detectors = "ET"
+detectors = ["ET"]
 trigger_time = 1766797218
 duration = 64.0
 sampling_frequency = 4096.0
 zero_noise = false
 
 [data.psd_files]
-ET = "curves_Jan_2020/et_d.txt"
+ET_1 = "curves_Jan_2020/et_d.txt"
+ET_2 = "curves_Jan_2020/et_d.txt"
+ET_3 = "curves_Jan_2020/et_d.txt"
 
 [data.psd_is_asd]
-ET = true
+ET_1 = true
+ET_2 = true
+ET_3 = true
 
 [data.injection_parameters]
 M_c     = 1.186
@@ -30,7 +34,7 @@ lamda_1 = 300.0
 lamda_2 = 450.0
 
 [waveform]
-approximant = "RippleIMRPhenomD_NRTidalv2"
+approximant = "IMRPhenomD_NRTidalv2"
 f_ref = 5.0
 
 [prior]
@@ -46,7 +50,7 @@ psi     = { type = "uniform",   min = 0.0,   max = 3.141592653589793 }
 ra      = { type = "uniform",   min = 0.0,   max = 6.283185307179586 }
 dec     = { type = "cosine" }
 lamda_1 = { type = "uniform",   min = 0.0,   max = 5000.0}
-lamda_1 = { type = "uniform",   min = 0.0,   max = 5000.0}
+lamda_2 = { type = "uniform",   min = 0.0,   max = 5000.0}
 
 [likelihood]
 f_min = 5.0
@@ -55,7 +59,7 @@ f_max = 2048.0
 [likelihood.multiband]
 
 [sampling]
-sky_frame
+sky_frame = "geocentric"
 
 [sampler]
 type = "flowmc"
