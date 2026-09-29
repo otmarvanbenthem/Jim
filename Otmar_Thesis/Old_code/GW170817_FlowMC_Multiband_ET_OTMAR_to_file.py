@@ -198,6 +198,6 @@ print(f"Likelihood evaluations: {diagnostics['n_likelihood_evaluations']:,}")
 
 chains = jim.get_samples()
 
-np.savez_compressed("./DATA/sample_data_GW170817_FlowMC_Multiband.npz", **chains)
+np.savez_compressed("./DATA/sample_data_GW170817_FlowMC_Multiband.npz", **chains) 
 
 
