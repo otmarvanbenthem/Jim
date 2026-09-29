@@ -31,9 +31,9 @@ parameter_labels = {
 #%%
 print("plotting")
 # Replaces jim.prior.parameter_names: use the keys in the file, in file order
-parameter_names = list(chain.keys())
+parameter_names = list(chains.keys())
 
-samples = np.column_stack([np.asarray(chain[k], dtype=float) for k in parameter_names])
+samples = np.column_stack([np.asarray(chains[k], dtype=float) for k in parameter_names])
 print(samples.shape)  # (n_samples, n_params)
 
 fig = corner.corner(
