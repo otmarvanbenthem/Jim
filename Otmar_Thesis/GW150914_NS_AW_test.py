@@ -86,8 +86,8 @@ injection_parameters = {
 
 ifos = [get_H1(), get_L1(), get_V1()]
 fmin = 20.0
-fmax = 1024
-duration = 4.0
+fmax = 512
+duration = 2.0
 sampling_frequency = 2 * fmax
 
 ifos = [get_H1(), get_L1(), get_V1()]
@@ -278,6 +278,8 @@ parameter_labels = {
     "ra": r"$\alpha$",
     "dec": r"$\delta$",
 }
+#Write sample data to JSON file
+np.savez_compressed("./DATA/sample_data_GW170817_FlowMC_Multiband.npz", **chains)
 
 fig = corner.corner(
     np.stack([chains[key] for key in jim.prior.parameter_names]).T,

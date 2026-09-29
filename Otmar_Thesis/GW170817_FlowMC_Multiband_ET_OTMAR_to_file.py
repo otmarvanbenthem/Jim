@@ -198,8 +198,6 @@ print(f"Likelihood evaluations: {diagnostics['n_likelihood_evaluations']:,}")
 
 chains = jim.get_samples()
 
-#Write sample data to JSON file
-with open("./DATA/sample_data_GW170817_FlowMC_Multiband.json", "w", encoding="utf-8") as f:
-    json.dump(chains, f, ensure_ascii=False, indent=2)
+np.savez_compressed("./DATA/sample_data_GW170817_FlowMC_Multiband.npz", **chains)
 
 
