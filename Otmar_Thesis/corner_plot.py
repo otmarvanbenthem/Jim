@@ -3,13 +3,16 @@ from pathlib import Path
 
 import corner
 import numpy as np
+# Define directories and base filename
+data_dir = Path("./DATA")
+base_name = "sample_data_GW170817_FlowMC_Multiband"
+# Build file paths
 
-file_path = Path("/DATA")
-file_name = "sample_data_GW170817_FlowMC_Multiband.json"  # no leading slash
+npz_path = data_dir / f"{base_name}.npz"
 
-with open(file_path / file_name, "r", encoding="utf-8") as f:
-    chain = json.load(f)
-
+# Load .npz archive safely into a dictionary
+with np.load(npz_path) as data:
+    chains = {key: data[key] for key in data.files}
 
 parameter_labels = {
     "M_c": r"$\mathcal{M}_c\,[M_\odot]$",
