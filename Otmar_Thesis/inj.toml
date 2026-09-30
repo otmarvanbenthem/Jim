@@ -9,14 +9,14 @@ sampling_frequency = 4096.0
 zero_noise = false
 
 [data.psd_files]
-ET_1 = "curves_Jan_2020/et_d.txt"
-ET_2 = "curves_Jan_2020/et_d.txt"
-ET_3 = "curves_Jan_2020/et_d.txt"
+ET1 = "curves_Jan_2020/et_d.txt"
+ET2 = "curves_Jan_2020/et_d.txt"
+ET3 = "curves_Jan_2020/et_d.txt"
 
 [data.psd_is_asd]
-ET_1 = true
-ET_2 = true
-ET_3 = true
+ET1 = true
+ET2 = true
+ET3 = true
 
 [data.injection_parameters]
 M_c     = 1.186
