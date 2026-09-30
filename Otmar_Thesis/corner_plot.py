@@ -4,8 +4,8 @@ from pathlib import Path
 import corner
 import numpy as np
 # Define directories and base filename
-data_dir = Path("./DATA")
-base_name = "sample_data_GW170817_FlowMC_Multiband.npz"
+data_dir = Path("/home/otmar-van-benthem/Documents/DATA")
+base_name = "samples.npz"
 # Build file paths
 
 npz_path = data_dir / base_name
