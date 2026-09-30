@@ -30,8 +30,8 @@ phase_c = 0.0
 psi     = 1.75
 ra      = 3.446
 dec     = -0.408
-lamda_1 = 300.0
-lamda_2 = 450.0
+lambda_1 = 300.0
+lambda_2 = 450.0
 
 [waveform]
 approximant = "IMRPhenomD_NRTidalv2"
@@ -49,8 +49,8 @@ phase_c = { type = "uniform",   min = 0.0,   max = 6.283185307179586 }
 psi     = { type = "uniform",   min = 0.0,   max = 3.141592653589793 }
 ra      = { type = "uniform",   min = 0.0,   max = 6.283185307179586 }
 dec     = { type = "cosine" }
-lamda_1 = { type = "uniform",   min = 0.0,   max = 5000.0}
-lamda_2 = { type = "uniform",   min = 0.0,   max = 5000.0}
+lambda_1 = { type = "uniform",   min = 0.0,   max = 5000.0}
+lambda_2 = { type = "uniform",   min = 0.0,   max = 5000.0}
 
 [likelihood]
 f_min = 5.0

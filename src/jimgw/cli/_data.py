@@ -98,15 +98,38 @@ def _load_injection(
         time_frame=time_frame,
     )
 
+    #Changed by Otmar
+    ifo_names = {ifo.name for ifo in ifos}
+    unknown = sorted(set(cfg.psd_files) - ifo_names)
+    if unknown:
+        raise ValueError(
+            f"data.psd_files has detector(s) not in the run: {unknown}. "
+            f"Available (after group expansion): {sorted(ifo_names)}."
+        )
+
     for ifo in ifos:
-        if ifo.name not in asd_file_dict:
-            raise ValueError(
-                f"No default ASD for detector '{ifo.name}'. "
-                f"Provide a PSD file via the config. "
-                f"Detectors with built-in defaults: {sorted(asd_file_dict)}."
+        psd_path = cfg.psd_files.get(ifo.name)
+
+        if psd_path is not None:
+            # User-supplied PSD/ASD file
+            is_asd = cfg.psd_is_asd.get(ifo.name, False)
+            logger.info(
+                "Loading %s for %s from %s",
+                "ASD" if is_asd else "PSD",
+                ifo.name,
+                psd_path,
             )
-        logger.info("Loading design PSD for %s", ifo.name)
-        ifo.load_and_set_psd()
+            ifo.set_psd(PowerSpectrum.from_file(str(psd_path), is_asd=is_asd))
+        else:
+            # No path given: fall back to the built-in design PSD
+            if ifo.name not in asd_file_dict:
+                raise ValueError(
+                    f"No default ASD for detector '{ifo.name}'. "
+                    f"Provide a PSD file via data.psd_files. "
+                    f"Detectors with built-in defaults: {sorted(asd_file_dict)}."
+                )
+            logger.info("Loading design PSD for %s", ifo.name)
+            ifo.load_and_set_psd()
 
         logger.info("Injecting signal into %s", ifo.name)
         ifo.inject_signal(
@@ -119,7 +142,6 @@ def _load_injection(
             f_max=f_max,
             zero_noise=cfg.zero_noise,
         )
-
 
 def _load_files(ifos: list[GroundBased2G], cfg: FileDataConfig) -> None:
     for ifo in ifos:

@@ -75,7 +75,22 @@ class InjectionDataConfig(_DataBase):
     sampling_frequency: float = Field(gt=0.0)
     injection_parameters: dict[str, float]
     zero_noise: bool = False
+    #Changed by Otmar
+    psd_files: dict[str, Path] = Field(
+        default_factory=dict
+    )  # detector_name -> PSD/ASD file; omitted detectors use the built-in default
+    psd_is_asd: dict[str, bool] = Field(
+        default_factory=dict
+    )  # detector_name -> True when the file contains ASD values (Hz^{-1/2})
 
+    @model_validator(mode="after")
+    def _check_psd_keys(self) -> "InjectionDataConfig":
+        orphan_flags = [d for d in self.psd_is_asd if d not in self.psd_files]
+        if orphan_flags:
+            raise ValueError(
+                f"psd_is_asd set for detector(s) without a psd_files entry: {orphan_flags}"
+            )
+        return self
 
 class FileDataConfig(_DataBase):
     """Load pre-saved strain and PSD from local files (useful for CI/offline use).
