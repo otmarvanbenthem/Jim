@@ -82,6 +82,6 @@ global_thinning = 100
 
 
 [output]
-dir = "injection_flowmc_test"
+dir = "/home/ovbenthem/DATA/inj_ET_rel_bin"
 save_corner = true
 overwrite = true 

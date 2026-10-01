@@ -4,7 +4,7 @@ seed = 42
 type = "injection"
 detectors = ["ET"]
 trigger_time = 1766797218
-duration = 64.0
+duration = 128.0
 sampling_frequency = 4096.0
 zero_noise = false
 
@@ -73,6 +73,6 @@ global_thinning = 100
 
 
 [output]
-dir = "injection_flowmc_test"
+dir = "/home/ovbenthem/DATA/inj_ET_mult.toml"
 save_corner = true
 overwrite = true 
