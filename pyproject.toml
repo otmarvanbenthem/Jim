@@ -3,7 +3,7 @@ name = "JimGW"
 dynamic = ["version"]
 description = "A JAX-based gravitational-wave inference toolkit"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.12"
 authors = [
 	{name = "Kaze W. K. Wong", email = "kazewong.physics@gmail.com"},
 ]
@@ -51,7 +51,14 @@ cuda = [
     "jax[cuda]>=0.8.2",
 ]
 rocm = [
-    "jax[rocm7-local]>=0.8.2",
+    "jax==0.11.0",
+    "jaxlib==0.11.0",
+    "jax-rocm10-plugin==0.11.0+rocm10.0.0",
+    "jax-rocm10-pjrt==0.11.0+rocm10.0.0",
+    "rocm==10.0.0",
+    "rocm-sdk-core==10.0.0",
+    "rocm-sdk-libraries==10.0.0",
+    "rocm-sdk-device-gfx1200==10.0.0",
 ]
 
 [dependency-groups]
@@ -85,9 +92,27 @@ Repository = "https://github.com/GW-JAX-Team/Jim"
 "Bug Tracker" = "https://github.com/GW-JAX-Team/Jim/issues"
 Changelog = "https://github.com/GW-JAX-Team/Jim/releases"
 
+[tool.uv]
+conflicts = [
+    [
+        { extra = "cuda" },
+        { extra = "rocm" },
+    ],
+]
+
+[[tool.uv.index]]
+name = "amd-rocm"
+url = "https://stable.repo.amd.com/rocm/whl-next/"
+explicit = true
+
 [tool.uv.sources]
 jimgw = { workspace = true }
-
+jax-rocm10-plugin = { index = "amd-rocm", extra = "rocm" }
+jax-rocm10-pjrt = { index = "amd-rocm", extra = "rocm" }
+rocm = { index = "amd-rocm", extra = "rocm" }
+rocm-sdk-core = { index = "amd-rocm", extra = "rocm" }
+rocm-sdk-libraries = { index = "amd-rocm", extra = "rocm" }
+rocm-sdk-device-gfx1200 = { index = "amd-rocm", extra = "rocm" }
 
 [build-system]
 requires = ["hatchling", "hatch-vcs"]
