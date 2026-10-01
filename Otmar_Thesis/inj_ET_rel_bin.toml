@@ -1,0 +1,87 @@
+seed = 42
+
+[data]
+type = "injection"
+detectors = ["ET"]
+trigger_time = 1766797218
+duration = 128.0
+sampling_frequency = 4096.0
+zero_noise = false
+
+[data.psd_files]
+ET1 = "curves_Jan_2020/et_d.txt"
+ET2 = "curves_Jan_2020/et_d.txt"
+ET3 = "curves_Jan_2020/et_d.txt"
+
+[data.psd_is_asd]
+ET1 = true
+ET2 = true
+ET3 = true
+
+[data.injection_parameters]
+M_c     = 1.186
+eta     = 0.248
+s1_z    = 0.005
+s2_z    = 0.005
+iota    = 2.53
+d_L     = 40.0
+t_c     = 0.0
+phase_c = 0.0
+psi     = 1.75
+ra      = 3.446
+dec     = -0.408
+lambda_1 = 300.0
+lambda_2 = 450.0
+
+[waveform]
+approximant = "IMRPhenomD_NRTidalv2"
+f_ref = 5.0
+
+[prior]
+M_c     = { type = "uniform",   min = 1.170,  max = 1.200  }
+q       = { type = "uniform",   min = 0.125, max = 1.0   }
+s1_z    = { type = "uniform",   min = -0.99, max = 0.99  }
+s2_z    = { type = "uniform",   min = -0.99, max = 0.99  }
+iota    = { type = "sine" }
+d_L     = { type = "power_law", min = 1.0,   max = 100.0, alpha = 2.0 }
+t_c     = { type = "uniform",   min = -0.1,  max = 0.1   }
+phase_c = { type = "uniform",   min = 0.0,   max = 6.283185307179586 }
+psi     = { type = "uniform",   min = 0.0,   max = 3.141592653589793 }
+ra      = { type = "uniform",   min = 0.0,   max = 6.283185307179586 }
+dec     = { type = "cosine" }
+lambda_1 = { type = "uniform",   min = 0.0,   max = 5000.0}
+lambda_2 = { type = "uniform",   min = 0.0,   max = 5000.0}
+
+[likelihood]
+f_min = 5.0
+f_max = 2048.0
+
+[likelihood.heterodyne]
+# Binning: specify at most one of the two options below.
+# epsilon = 0.5  # max phase change per bin in rad (default when neither is set)
+# n_bins = 60    # fixed bin count (mutually exclusive with epsilon)
+
+[likelihood.heterodyne.reference_parameters]
+type = "optimizer"   # "optimizer" | "provided" | "injection"
+popsize = 500
+n_steps = 1000
+# target = -1234.5    # optional log-likelihood value to stop the search early at
+
+[sampling]
+sky_frame = "geocentric"
+
+[sampler]
+type = "flowmc"
+n_chains = 1000
+n_local_steps = 100
+n_global_steps = 1000
+n_training_loops = 50
+n_production_loops = 10
+n_NFproposal_batch_size = 100
+global_thinning = 100
+
+
+[output]
+dir = "injection_flowmc_test"
+save_corner = true
+overwrite = true 
