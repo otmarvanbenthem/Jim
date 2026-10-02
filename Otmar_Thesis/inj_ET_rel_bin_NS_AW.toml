@@ -67,14 +67,10 @@ f_max = 2048.0
 sky_frame = "geocentric"
 
 [sampler]
-type = "flowmc"
-n_chains = 1000
-n_local_steps = 100
-n_global_steps = 1000
-n_training_loops = 50
-n_production_loops = 10
-n_NFproposal_batch_size = 100
-global_thinning = 100
+type = "blackjax-ns-aw"
+n_live = 1000
+n_delete_frac = 0.5
+n_target = 60 
 
 
 [output]
