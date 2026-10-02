@@ -73,6 +73,6 @@ global_thinning = 100
 
 
 [output]
-dir = "/home/ovbenthem/DATA/inj_ET_mult.toml"
+dir = "/home/ovbenthem/DATA/inj_ET_mult"
 save_corner = true
 overwrite = true 
