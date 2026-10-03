@@ -4,7 +4,7 @@ seed = 42
 type = "injection"
 detectors = ["ET"]
 trigger_time = 1766797218
-duration = 128.0
+duration = 64.0
 sampling_frequency = 4096.0
 zero_noise = false
 
