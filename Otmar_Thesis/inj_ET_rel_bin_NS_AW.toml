@@ -68,9 +68,9 @@ sky_frame = "geocentric"
 
 [sampler]
 type = "blackjax-ns-aw"
-n_live = 1000
+n_live = 2000
 n_delete_frac = 0.5
-n_target = 60 
+n_target = 120 
 
 
 [output]
