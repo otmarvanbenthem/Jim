@@ -74,6 +74,6 @@ n_target = 60
 
 
 [output]
-dir = "/home/ovbenthem/DATA/inj_ET_rel_bin"
+dir = "/home/ovbenthem/DATA/inj_ET_rel_bin_NS_AW"
 save_corner = true
 overwrite = true 
