@@ -59,7 +59,7 @@ f_max = 2048.0
 [likelihood.heterodyne]
 # Binning: specify at most one of the two options below.
 # epsilon = 0.5  # max phase change per bin in rad (default when neither is set)
-# n_bins = 60    # fixed bin count (mutually exclusive with epsilon)
+n_bins = 1000    # fixed bin count (mutually exclusive with epsilon)
 
 
 
