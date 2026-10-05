@@ -62,7 +62,6 @@ f_max = 2048.0
 sky_frame = "geocentric"
 
 [sampler]
-[sampler]
 type = "blackjax-ns-aw"
 n_live = 2000
 n_delete_frac = 0.5
