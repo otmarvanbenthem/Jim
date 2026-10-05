@@ -64,5 +64,5 @@ for i, run in enumerate(runs):
 
 fig.legend(handles=[Line2D([], [], color=f"C{i}", label=l) for i, l in enumerate(labels)],
            loc="upper right", fontsize=14) 
-fig.savefig(args.out, dpi=200)
+fig.savefig(args.out, dpi=100)
 print("Saved", args.out)
