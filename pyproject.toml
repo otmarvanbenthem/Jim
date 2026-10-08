@@ -48,7 +48,7 @@ jim-run = "jimgw.cli:app"
 
 [project.optional-dependencies]
 cuda = [
-    "jax[cuda]>=0.8.2",
+    "jax[cuda]>=0.8.2; sys_platform == 'linux'",
 ]
 rocm = [
     "jax==0.11.0",
