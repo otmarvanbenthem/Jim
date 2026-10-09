@@ -6,17 +6,13 @@ detectors = ["ET"]
 trigger_time = 1766797218
 duration = 180.0
 sampling_frequency = 4096.0
-zero_noise = true
+zero_noise = false
 
-[data.psd_files]
-ET1 = "curves_Jan_2020/et_d.txt"
-ET2 = "curves_Jan_2020/et_d.txt"
-ET3 = "curves_Jan_2020/et_d.txt"
+[data.asd_files]
+ET = "curves_Jan_2020/et_d.txt"
 
-[data.psd_is_asd]
-ET1 = true
-ET2 = true
-ET3 = true
+
+
 
 [data.injection_parameters]
 M_c     = 1.186
@@ -74,6 +70,6 @@ n_target = 60
 
 
 [output]
-dir = "/home/ovbenthem/DATA/inj_ET_rel_bin_NS_AW"
+dir = "/home/ovbenthem/DATA/inj_ET_rel_bin_NS_AW_with_noise"
 save_corner = true
 overwrite = true 

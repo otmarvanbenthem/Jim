@@ -121,6 +121,7 @@ class InjectionDataConfig(_PSDSourceBase):
     zero_noise: bool = False
     noise_seed: Optional[int] = None
 
+
     @model_validator(mode="after")
     def _check_noise_seed(self) -> "InjectionDataConfig":
         if self.zero_noise and self.noise_seed is not None:
