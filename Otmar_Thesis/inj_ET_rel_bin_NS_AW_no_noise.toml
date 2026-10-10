@@ -6,7 +6,7 @@ detectors = ["ET"]
 trigger_time = 1766797218
 duration = 180.0
 sampling_frequency = 4096.0
-zero_noise = false
+zero_noise = true
 noise_seed = 0
 
 [data.asd_files]
@@ -71,6 +71,6 @@ n_target = 120
 
 
 [output]
-dir = "/home/ovbenthem/DATA/inj_ET_rel_bin_NS_AW_with_noise"
+dir = "/home/ovbenthem/DATA/inj_ET_rel_bin_NS_AW_no_noise"
 save_corner = true
 overwrite = true 
