@@ -48,9 +48,7 @@ names = sorted({k for r in runs for k, v in r.items()
 if not names:
     raise SystemExit("No 1D/2D numeric arrays to plot.")
 
-ncol = min(3, len(names))
-nrow = -(-len(names) // ncol)
-fig, axes = plt.subplots(nrow, ncol, figsize=(4.5 * ncol, 3.2 * nrow), squeeze=False)
+fig, axes = plt.subplots(len(names), 1, figsize=(12, 3.5 * len(names)), squeeze=False)
 for ax, k in zip(axes.ravel(), names):
     for i, run in enumerate(runs):
         if k not in run:
