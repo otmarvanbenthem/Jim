@@ -55,6 +55,7 @@ f_max = 2048.0
 
 [sampling]
 sky_frame = "geocentric"
+time_frame = "geocentric"
 
 [sampler]
 type = "blackjax-ns-aw"

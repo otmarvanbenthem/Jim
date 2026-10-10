@@ -62,6 +62,7 @@ n_bins = 5000    # fixed bin count (mutually exclusive with epsilon)
 
 [sampling]
 sky_frame = "geocentric"
+time_frame = "geocentric"
 
 [sampler]
 type = "blackjax-ns-aw"
