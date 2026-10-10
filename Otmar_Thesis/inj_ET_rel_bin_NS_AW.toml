@@ -58,7 +58,9 @@ f_max = 2048.0
 # epsilon = 0.5  # max phase change per bin in rad (default when neither is set)
 n_bins = 5000    # fixed bin count (mutually exclusive with epsilon)
 
-
+[likelihood.fixed_parameters]
+ra = 3.446
+dec = -0.408
 
 [sampling]
 sky_frame = "geocentric"
@@ -72,6 +74,6 @@ n_target = 120
 
 
 [output]
-dir = "/home/ovbenthem/DATA/inj_ET_rel_bin_NS_AW_with_noise"
+dir = "/home/ovbenthem/DATA/inj_ET_rel_bin_NS_AW_with_noise_fix"
 save_corner = true
 overwrite = true 

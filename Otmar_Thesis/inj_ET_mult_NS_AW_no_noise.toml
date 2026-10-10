@@ -53,6 +53,10 @@ f_max = 2048.0
 
 [likelihood.multiband]
 
+[likelihood.fixed_parameters]
+ra = 3.446
+dec = -0.408
+
 [sampling]
 sky_frame = "geocentric"
 time_frame = "geocentric"
@@ -65,6 +69,6 @@ n_target = 120
 
 
 [output]
-dir = "/home/ovbenthem/DATA/inj_ET_mult_NS_AW_no_noise"
+dir = "/home/ovbenthem/DATA/inj_ET_mult_NS_AW_no_noise_fix"
 save_corner = true
 overwrite = true 
