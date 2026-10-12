@@ -58,11 +58,17 @@ for i, run in enumerate(runs):
     samples = np.column_stack([run[k] for k in names])
     fig = corner.corner(
         samples, fig=fig, color=f"C{i}", labels=[LABELS.get(k, k) for k in names],
+        label_kwargs={"fontsize": 30},   # axis labels
+        labelpad=0.1,                    # room between labels and tick numbers
         truths=truths if i == 0 else None, truth_color="k",
         hist_kwargs={"density": True}, plot_datapoints=False, plot_density=False,
     )
 
+# tick numbers on every panel
+for ax in fig.axes:
+    ax.tick_params(axis="both", labelsize=12)
+
 fig.legend(handles=[Line2D([], [], color=f"C{i}", label=l) for i, l in enumerate(labels)],
-           loc="upper right", fontsize=14) 
-fig.savefig(args.out, dpi=100)
+           loc="upper right", fontsize=24)
+fig.savefig(args.out, dpi=100, bbox_inches="tight")
 print("Saved", args.out)
