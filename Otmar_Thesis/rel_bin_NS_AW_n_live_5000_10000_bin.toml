@@ -56,7 +56,7 @@ f_max = 2048.0
 [likelihood.heterodyne]
 # Binning: specify at most one of the two options below.
 # epsilon = 0.5  # max phase change per bin in rad (default when neither is set)
-n_bins = 8000    # fixed bin count (mutually exclusive with epsilon)
+n_bins = 10000    # fixed bin count (mutually exclusive with epsilon)
 
 
 [sampling]
@@ -71,6 +71,6 @@ n_target = 120
 
 
 [output]
-dir = "/home/ovbenthem/DATA/inj_ET_rel_bin_NS_AW_n_live_5000_8000_bin"
+dir = "/home/ovbenthem/DATA/inj_ET_rel_bin_NS_AW_n_live_5000_10000_bin"
 save_corner = true
 overwrite = true 
