@@ -5,6 +5,10 @@ Each argument is a run directory containing samples.npz (and config.final.toml).
     python plot_corner.py DATA/run1
     python plot_corner.py DATA/run1 DATA/run2 --legend flowMC NS-AW --out compare.png
 """
+import jax 
+
+jax.config.update('jax_enable_x64', True)
+
 import argparse
 import tomllib
 from pathlib import Path
@@ -15,6 +19,13 @@ import numpy as np
 
 matplotlib.use("Agg")
 from matplotlib.lines import Line2D
+import jax.numpy as jnp
+from jimgw.core.single_event.detector import get_ET
+from jimgw.core.single_event.transforms import (
+    GeocentricArrivalTimeToDetectorArrivalTimeTransform,
+)
+
+
 
 LABELS = {
     "M_c": r"$\mathcal{M}_c\,[M_\odot]$", "q": r"$q$", "s1_z": r"$\chi_1$",
@@ -48,10 +59,21 @@ truths = None
 config = dirs[0] / "config.final.toml"
 if config.is_file():
     with open(config, "rb") as f:
-        inj = tomllib.load(f)["data"]["injection_parameters"]
+        cfg = tomllib.load(f)                      # load once
+    inj = cfg["data"]["injection_parameters"]
     eta = inj["eta"]
     inj["q"] = (1 - 2 * eta - np.sqrt(1 - 4 * eta)) / (2 * eta)
-    truths = [inj.get(k) for k in names]  # None = no line (e.g. t_det)
+
+    if "t_det" in names and "t_det" not in inj:
+        trigger_time = cfg["data"]["trigger_time"]
+        ifos = get_ET()
+        t_transform = GeocentricArrivalTimeToDetectorArrivalTimeTransform(
+            trigger_time=trigger_time, ifo=ifos[0]
+        )
+        p = {k: jnp.float64(v) for k, v in inj.items()}   # needs t_c, ra, dec
+        inj["t_det"] = float(t_transform.forward(p)["t_det"])
+
+    truths = [inj.get(k) for k in names]  # None = no line
 
 fig = None
 for i, run in enumerate(runs):
@@ -67,7 +89,9 @@ for i, run in enumerate(runs):
 # tick numbers on every panel
 for ax in fig.axes:
     ax.tick_params(axis="both", labelsize=12)
-
+    
+title = " vs ".join(d.name for d in dirs)
+fig.suptitle(title, fontsize=32, y=1.02)
 fig.legend(handles=[Line2D([], [], color=f"C{i}", label=l) for i, l in enumerate(labels)],
            loc="upper right", fontsize=24)
 fig.savefig(args.out, dpi=100, bbox_inches="tight")
