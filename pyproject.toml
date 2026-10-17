@@ -3,7 +3,7 @@ name = "JimGW"
 dynamic = ["version"]
 description = "A JAX-based gravitational-wave inference toolkit"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.11"
 authors = [
 	{name = "Kaze W. K. Wong", email = "kazewong.physics@gmail.com"},
 ]
@@ -34,10 +34,8 @@ dependencies = [
     "jaxtyping>=0.3.3",
     "matplotlib>=3.10.7",
     "numpy>=1.26",
-    "pip>=26.2.1",
     "pydantic>=2",
-    "requests>=2.32.3",
-    "ripplegw>=0.4.0",
+    "ripplegw>=0.4.1",
     "scipy>=1.17.1",
     "tomli-w>=1.0",
     "typer>=0.12",
@@ -50,16 +48,6 @@ jim-run = "jimgw.cli:app"
 cuda = [
     "jax[cuda]>=0.8.2; sys_platform == 'linux'",
 ]
-rocm = [
-    "jax==0.11.0",
-    "jaxlib==0.11.0",
-    "jax-rocm10-plugin==0.11.0+rocm10.0.0",
-    "jax-rocm10-pjrt==0.11.0+rocm10.0.0",
-    "rocm==10.0.0",
-    "rocm-sdk-core==10.0.0",
-    "rocm-sdk-libraries==10.0.0",
-    "rocm-sdk-device-gfx1200==10.0.0",
-]
 
 [dependency-groups]
 test = [
@@ -69,21 +57,17 @@ test = [
     "pytest>=8.3.3",
     "pytest-cov>=6.0.0",
     "ruff>=0.12.2",
-    "pyright>=1.1.402",
 ]
 cross-validation = [
     "lalsuite>=7.26.4",
     "bilby[gw]>=2.8.0",
+    "bilby-xg",
 ]
 doc = [
     "nbconvert",
     "mkdocstrings[python]",
     "pymdown-extensions",
     "zensical",
-]
-dev = [
-    "ipykernel>=7.3.0",
-    "ipython>=9.17.1",
 ]
 [project.urls]
 Homepage = "https://github.com/GW-JAX-Team/Jim"
@@ -92,27 +76,9 @@ Repository = "https://github.com/GW-JAX-Team/Jim"
 "Bug Tracker" = "https://github.com/GW-JAX-Team/Jim/issues"
 Changelog = "https://github.com/GW-JAX-Team/Jim/releases"
 
-[tool.uv]
-conflicts = [
-    [
-        { extra = "cuda" },
-        { extra = "rocm" },
-    ],
-]
-
-[[tool.uv.index]]
-name = "amd-rocm"
-url = "https://stable.repo.amd.com/rocm/whl-next/"
-explicit = true
-
 [tool.uv.sources]
 jimgw = { workspace = true }
-jax-rocm10-plugin = { index = "amd-rocm", extra = "rocm" }
-jax-rocm10-pjrt = { index = "amd-rocm", extra = "rocm" }
-rocm = { index = "amd-rocm", extra = "rocm" }
-rocm-sdk-core = { index = "amd-rocm", extra = "rocm" }
-rocm-sdk-libraries = { index = "amd-rocm", extra = "rocm" }
-rocm-sdk-device-gfx1200 = { index = "amd-rocm", extra = "rocm" }
+bilby-xg = { git = "https://github.com/Pratyusava/bilby_xG", rev = "11ee11607a531b2d7f286eb438d2c971d4c045cf" }
 
 [build-system]
 requires = ["hatchling", "hatch-vcs"]
@@ -130,10 +96,6 @@ markers = [
     "slow: slow tests",
 ]
 
-[tool.pyright]
-include = ["src"]
-reportUnnecessaryTypeIgnoreComment = "error"
-
 [tool.ruff.lint]
 ignore = ["F722", "UP007", "UP045"]
 
@@ -144,15 +106,9 @@ ignore = ["F722", "UP007", "UP045"]
 [tool.ty.src]
 include = ["src"]
 
-[tool.ty.analysis]
-# These libraries expose dynamic APIs or annotation helpers that ty cannot yet model.
-# Pyright remains responsible for checking their richer type information.
-replace-imports-with-any = [
-    "astropy.**",
-    "blackjax.**",
-    "flowMC.**",
-    "jaxtyping.**",
-]
+[tool.ty.rules]
+possibly-unresolved-reference = "error"
+unused-ignore-comment = "error"
 
 [tool.coverage.report]
 exclude_also = [
@@ -161,5 +117,3 @@ exclude_also = [
     "raise NotImplementedError",
     "@(abc\\. )?abstractmethod",
 ]
-
-

@@ -122,7 +122,6 @@ jim = Jim(
         n_delete_frac=0.5,
         n_target=60,
         max_mcmc=5000,
-        max_proposals=1000,
         termination_dlogz=0.1,
     ),
     sample_transforms=sample_transforms,
@@ -194,10 +193,8 @@ Yallup, D., Kroupa, N., Handley, W., *"Nested Slice Sampling"*, [OpenReview](htt
 ### BlackJAX SwiG
 
 Nested Slice within Gibbs (SwiG) applies covariance-shaped slice updates to named parameter blocks.
-With `TransientLikelihoodFD`, `HeterodynedTransientLikelihoodFD`, or `MultibandedTransientLikelihoodFD`, the likelihood provides a cache of generated waveform polarizations to the sampler.
-Blocks that affect waveform inputs refresh that cache, while detector-projection-only blocks reuse it.
-When the waveform model supports analytic distance scaling, luminosity distance is also factored out, so a `d_L` block reuses the cache; otherwise a `d_L` block refreshes it like any other waveform dependency.
-The likelihood determines the remaining dependencies after sample transforms, likelihood transforms, fixed parameters, and analytic marginalisation have been applied.
+With `TransientLikelihoodFD`, `HeterodynedTransientLikelihoodFD`, or `MultibandedTransientLikelihoodFD`, the generated waveform polarizations are cached.
+Blocks that affect waveform inputs refresh that cache, while detector-projection-only blocks reuse it and are cheaper; see the [technical notes](../notes/samplers.md) for how the likelihood decides.
 
 ```python
 from jimgw.samplers.config import BlackJAXSwiGConfig
@@ -309,24 +306,39 @@ Set `checkpoint_interval = 0` in the `[sampler]` block to opt out.
 
 ## Periodic parameters
 
-All samplers accept a `periodic` field to handle parameters that wrap around (e.g. angles).
-Pass a dict of `parameter_name: (lower, upper)` bounds:
+Parameters that wrap around (e.g. angles) are declared with the `periodic` argument of `Jim`, not in the sampler config.
+For flowMC, NSS, SwiG and SMC, pass a dict of `parameter_name: (lower, upper)` bounds in the sampling space:
 
 ```python
-config = FlowMCConfig(
+jim = Jim(
     ...,
+    sampler_config=FlowMCConfig(...),
     periodic={"phase_c": (0.0, 6.283185), "psi": (0.0, 3.141593)},
 )
 ```
 
-BlackJAX NS AW operates in `[0, 1]` per dimension, so its `periodic` field takes a plain list of parameter names:
+BlackJAX NS AW operates in `[0, 1]` per dimension, so it takes a plain list of sampling-space parameter names:
 
 ```python
-config = BlackJAXNSAWConfig(
+jim = Jim(
     ...,
-    periodic=["phase_c", "psi"],
+    sampler_config=BlackJAXNSAWConfig(...),
+    periodic=["phase_c_unit", "psi_unit"],
 )
 ```
+
+For the usual angles you can let `get_default_periodic` build either form from your sample transforms:
+
+```python
+from jimgw.core.single_event.helpers import get_default_periodic
+
+# A dict of bounds, or for sample transforms that map onto [0, 1] (NS AW)
+# the names of the unit-cube parameters, e.g. ["psi_unit", "azimuth_unit"].
+periodic = get_default_periodic(prior, sample_transforms)
+```
+
+It marks `psi`, `ra`, `azimuth`, `phase_c`, `phi_jl`, `phi_12`, `s1_phi` and `s2_phi` when their prior is a `UniformPrior` over exactly one period.
+The [CLI](cli.md) passes the same result to Jim.
 
 ---
 
