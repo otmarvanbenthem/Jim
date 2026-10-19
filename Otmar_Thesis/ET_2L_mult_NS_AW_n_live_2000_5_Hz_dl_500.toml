@@ -55,7 +55,6 @@ f_max = 2048.0
 
 
 
-
 [sampler]
 type = "blackjax-ns-aw"
 n_live = 2000
