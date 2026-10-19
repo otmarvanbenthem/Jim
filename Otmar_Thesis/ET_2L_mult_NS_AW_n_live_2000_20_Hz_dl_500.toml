@@ -2,7 +2,7 @@ seed = 42
 
 [data]
 type = "injection"
-detectors = ["ET"]
+detectors = ["ET_2L"]
 trigger_time = 1766797218
 duration = 180.0
 sampling_frequency = 4096.0
