@@ -23,4 +23,4 @@ EQUATORIAL_SKY_PARAMS = frozenset({"ra", "dec"})
 DETECTOR_SKY_PARAMS = frozenset({"azimuth", "zenith"})
 
 # Detector names supported by get_detector_preset()
-SUPPORTED_DETECTORS = frozenset({"H1", "L1", "V1", "ET", "CE", "ET_2L"})
+SUPPORTED_DETECTORS = frozenset({"H1", "L1", "V1", "ET", "CE"})
