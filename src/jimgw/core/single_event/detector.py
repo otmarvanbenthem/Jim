@@ -1700,5 +1700,4 @@ def get_detector_preset() -> dict[str, GroundBased2G | list[GroundBased3G]]:
         "V1": get_V1(),
         "ET": get_ET(),
         "CE": get_CE(),
-        "ET_2L" : get_ET_2L(),
     }
