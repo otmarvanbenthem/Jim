@@ -54,9 +54,6 @@ f_max = 2048.0
 [likelihood.multiband]
 
 
-[sampling]
-sky_frame = "geocentric"
-
 
 [sampler]
 type = "blackjax-ns-aw"
