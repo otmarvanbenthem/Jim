@@ -5,7 +5,7 @@ Each argument is a run directory containing samples.npz (and config.final.toml).
     python plot_corner.py DATA/run1
     python plot_corner.py DATA/run1 DATA/run2 --legend flowMC NS-AW --out compare.png
 """
-import jax 
+import jax
 
 jax.config.update('jax_enable_x64', True)
 
@@ -89,7 +89,7 @@ for i, run in enumerate(runs):
 # tick numbers on every panel
 for ax in fig.axes:
     ax.tick_params(axis="both", labelsize=20)
-    
+
 #title = " vs ".join(d.name for d in dirs)
 #fig.suptitle(title, fontsize=32, y=1.02)
 fig.legend(handles=[Line2D([], [], color=f"C{i}", label=l) for i, l in enumerate(labels)],

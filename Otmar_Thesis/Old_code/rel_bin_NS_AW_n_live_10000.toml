@@ -73,4 +73,4 @@ n_target = 120
 [output]
 dir = "/home/ovbenthem/DATA/inj_ET_rel_bin_NS_AW_n_live_10000"
 save_corner = true
-overwrite = true 
+overwrite = true

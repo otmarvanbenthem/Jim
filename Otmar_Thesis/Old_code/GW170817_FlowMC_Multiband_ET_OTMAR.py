@@ -7,7 +7,7 @@ has_rocm = shutil.which("rocminfo") is not None or os.path.exists("/opt/rocm")
 
 # If on local ROCm machine and SDMA isn't disabled yet, set vars and relaunch
 if has_rocm:
-  # os.environ["XLA_FLAGS"] = "--xla_gpu_enable_command_buffer= --xla_gpu_enable_triton_gemm=false" 
+  # os.environ["XLA_FLAGS"] = "--xla_gpu_enable_command_buffer= --xla_gpu_enable_triton_gemm=false"
   # os.environ["HSA_ENABLE_SDMA"] = "0"
   #os.environ["HIP_VISIBLE_DEVICES"] = "0"
  #  os.environ["XLA_PYTHON_CLIENT_ALLOCATOR"] = "platform" #not sure what this does but helped
@@ -140,7 +140,7 @@ print("prior done")
 
 sample_transforms = [
     GeocentricArrivalTimeToDetectorArrivalTimeTransform(trigger_time=gps, ifo=ifos[0]),
- 
+
 ]
 
 likelihood_transforms = [

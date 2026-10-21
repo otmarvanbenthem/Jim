@@ -65,10 +65,10 @@ type = "blackjax-ns-aw"
 n_live = 10000
 n_delete_frac = 0.5
 n_target = 120
-max_proposals = 1 
+max_proposals = 1
 
 
 [output]
 dir = "/home/ovbenthem/DATA/inj_ET_mult_NS_AW_n_live_10000_mp_1"
 save_corner = true
-overwrite = true 
+overwrite = true
