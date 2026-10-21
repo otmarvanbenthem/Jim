@@ -30,7 +30,7 @@ lambda_2 = 450.0
 
 [waveform]
 approximant = "IMRPhenomD_NRTidalv2"
-f_ref = 5.0
+f_ref = 20.0
 
 [prior]
 M_c     = { type = "uniform",   min = 1.050,  max = 1.350  }
@@ -48,7 +48,7 @@ lambda_1 = { type = "uniform",   min = 0.0,   max = 1000.0}
 lambda_2 = { type = "uniform",   min = 0.0,   max = 1000.0}
 
 [likelihood]
-f_min = 20.0
+f_min = 5.0
 f_max = 2048.0
 
 [likelihood.heterodyne]

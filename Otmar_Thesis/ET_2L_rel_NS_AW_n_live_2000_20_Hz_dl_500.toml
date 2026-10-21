@@ -30,7 +30,7 @@ lambda_2 = 450.0
 
 [waveform]
 approximant = "IMRPhenomD_NRTidalv2"
-f_ref = 5.0
+f_ref = 20.0
 
 [prior]
 M_c     = { type = "uniform",   min = 1.050,  max = 1.350  }
