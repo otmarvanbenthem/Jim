@@ -21,6 +21,7 @@ matplotlib.use("Agg")
 from matplotlib.lines import Line2D
 import jax.numpy as jnp
 from jimgw.core.single_event.detector import get_ET
+from jimgw.core.single_event.detector import get_ET_2L
 from jimgw.core.single_event.transforms import (
     GeocentricArrivalTimeToDetectorArrivalTimeTransform,
 )
@@ -39,6 +40,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument("dirs", nargs="+", help="run directories")
 parser.add_argument("--legend", nargs="+", help="one label per directory")
 parser.add_argument("--out", default="compare.png")
+parser.add_argument("--params", nargs="+", default=None, help="parameters to plot, in this order (default: all shared by every run)")
 args = parser.parse_args()
 
 dirs = [Path(d).expanduser() for d in args.dirs]
@@ -50,8 +52,17 @@ for d in dirs:
     with np.load(d / "samples.npz") as f:
         runs.append({k: np.asarray(f[k], dtype=float) for k in f.files})
 
-# Plot the parameters that every run has
-names = [k for k in runs[0] if all(k in r for r in runs)]
+# Parameters that every run has
+shared = [k for k in runs[0] if all(k in r for r in runs)]
+
+if args.params is None:
+    names = shared                      # standard: everything
+else:
+    missing = [p for p in args.params if p not in shared]
+    if missing:
+        parser.error(f"parameter(s) not found in all runs: {missing}. "
+                     f"Available: {shared}")
+    names = list(dict.fromkeys(args.params))   # keep order, drop duplicates
 print("Plotting:", names)
 
 # Injected values from the first run's config (q is computed from eta)
@@ -66,7 +77,7 @@ if config.is_file():
 
     if "t_det" in names and "t_det" not in inj:
         trigger_time = cfg["data"]["trigger_time"]
-        ifos = get_ET()
+        ifos = get_ET_2L()
         t_transform = GeocentricArrivalTimeToDetectorArrivalTimeTransform(
             trigger_time=trigger_time, ifo=ifos[0]
         )
