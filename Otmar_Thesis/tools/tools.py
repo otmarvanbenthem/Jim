@@ -1,7 +1,8 @@
 import numpy as np
+import jax
 import jax.numpy as jnp
 jax.config.update("jax_enable_x64", True)
-from jimgw.core.single_event.detector import get_ET, get_ET_2
+
 from jimgw.core.single_event.detector import get_ET, get_ET_2L
 
 G, c, M_SUN = 6.67430e-11, 299792458.0, 1.98847e30
@@ -20,7 +21,7 @@ def new_dl(old_dl,old_snr,new_snr):
 """Helper tools for injection studies with ET and ET 2L."""
 
 
-L
+
 
 _DETECTOR_GETTERS = {
     "ET": get_ET,
