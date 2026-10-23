@@ -58,13 +58,12 @@ epsilon = 0.01  # max phase change per bin in rad (default when neither is set)
 
 
 
-
 [sampler]
 type = "blackjax-ns-aw"
 n_live = 2000
 n_delete_frac = 0.5
 n_target = 120
-chain_batch_size=100
+
 
 [output]
 dir = "/home/ovbenthem/DATA/inj_ET_2L_5_Hz_rel_bin_NS_AW_n_live_2000_snr_30"
