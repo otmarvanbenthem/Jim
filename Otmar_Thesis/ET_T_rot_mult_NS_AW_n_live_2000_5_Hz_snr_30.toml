@@ -48,7 +48,7 @@ lambda_1 = { type = "uniform",   min = 0.0,   max = 1000.0}
 lambda_2 = { type = "uniform",   min = 0.0,   max = 1000.0}
 
 [likelihood]
-f_min = 20.0
+f_min = 5.0
 f_max = 2048.0
 
 [likelihood.multiband]
