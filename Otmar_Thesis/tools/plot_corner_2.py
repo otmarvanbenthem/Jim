@@ -159,7 +159,7 @@ def main():
             samples, fig=fig, color=f"C{i}", labels=[LABELS.get(k, k) for k in names],
             label_kwargs={"fontsize": label_fs}, labelpad=0.1,
             truths=truths if i == 0 else None, truth_color="k",
-            hist_kwargs={"density": True}, plot_datapoints=False, plot_density=False,
+            hist_kwargs={"density": True}, plot_datapoints=True, plot_density=False, plot_contours=False
         )
 
     for ax in fig.axes:
