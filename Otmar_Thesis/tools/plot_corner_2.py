@@ -51,6 +51,9 @@ def parse_args():
     p.add_argument("--ref-ifo", type=int, default=0,
                    help="detector index used as t_det reference in the config "
                         "fallback (default 0)")
+    p.add_argument("--detectors", choices=["ET_2L", "ET"], default=None,
+                   help="detector geometry for the config fallback: ET_2L (two L-shaped) "
+                        "or ET (triangle). Default: infer from config.final.toml")
     args = p.parse_args()
     if args.legend and len(args.legend) != len(args.dirs):
         p.error(f"--legend needs {len(args.dirs)} labels, got {len(args.legend)}")
@@ -79,11 +82,44 @@ def select_names(parser, runs, requested):
     return list(dict.fromkeys(requested))  # keep order, drop duplicates
 
 
-def truths_from_config(cfg, names, runs, ref_ifo):
+def resolve_detectors(cfg, override=None):
+    """Return (name, list of detectors) for the geometry the run used.
+
+    `override` ("ET_2L" or "ET") wins. Otherwise the [data] table of the config
+    is scanned for detector names: "ET1"/"ET2"/"ET3" or "triangle" -> ET
+    triangle, "2L" or "ET_L..." -> ET_2L. If nothing matches, fall back to
+    ET_2L with a warning.
+    """
+    from jimgw.core.single_event.detector import get_ET, get_ET_2L
+    getters = {"ET_2L": get_ET_2L, "ET": get_ET}
+
+    name = override
+    if name is None:
+        dets = cfg.get("data", {}).get("detectors", [])
+        if isinstance(dets, str):
+            dets = [dets]
+        dets = [str(d).lower() for d in dets]
+        text = " ".join(dets)
+        if "2l" in text or "et_l" in text or "etl" in text:
+            name = "ET_2L"
+        elif "et" in dets or "triangle" in text or any(f"et{i}" in dets for i in (1, 2, 3)):
+            name = "ET"
+        else:
+            print("WARNING: could not infer the detector geometry from the config; "
+                  "assuming ET_2L. Pass --detectors ET or --detectors ET_2L to set it.")
+            name = "ET_2L"
+        print(f"Detector geometry: {name} (inferred from config)")
+    else:
+        print(f"Detector geometry: {name} (from --detectors)")
+    return name, getters[name]()
+
+
+def truths_from_config(cfg, names, runs, ref_ifo, detectors=None):
     """Approximate injected values from config.final.toml.
 
     Used only when no truths.json exists. t_det is computed for detector
-    `ref_ifo` of ET_2L; ra/dec are the geocentric injection values, which are
+    `ref_ifo` of the run's detector set (ET_2L or the ET triangle, see
+    resolve_detectors); ra/dec are the geocentric injection values, which are
     wrong if the samples are in a detector-frame sky parametrisation.
     """
     inj = dict(cfg["data"]["injection_parameters"])
@@ -97,13 +133,17 @@ def truths_from_config(cfg, names, runs, ref_ifo):
 
     if "t_det" in names and "t_det" not in inj:
         import jax.numpy as jnp
-        from jimgw.core.single_event.detector import get_ET_2L
         from jimgw.core.single_event.time_utils import cached_greenwich_mean_sidereal_time
+
+        _, ifos = resolve_detectors(cfg, detectors)
+        if not 0 <= ref_ifo < len(ifos):
+            raise SystemExit(f"--ref-ifo {ref_ifo} out of range: this geometry has "
+                             f"{len(ifos)} detectors (0..{len(ifos) - 1})")
 
         gmst = cached_greenwich_mean_sidereal_time(cfg["data"]["trigger_time"])
         ra, dec = jnp.float64(inj["ra"]), jnp.float64(inj["dec"])
         cands = [float(inj["t_c"] + ifo.delay_from_geocenter(ra, dec, gmst))
-                 for ifo in get_ET_2L()]
+                 for ifo in ifos]
         lo, hi = np.percentile(runs[0]["t_det"], [1, 99])
         print(f"t_det candidates per detector: {cands}; posterior 1-99%: [{lo:.5f}, {hi:.5f}]")
         inj["t_det"] = cands[ref_ifo]
@@ -128,7 +168,7 @@ def get_truths(args, dirs, names, runs):
         if cfg["data"].get("type") != "injection":
             return None
         print("No truths.json; reconstructing truths from config (approximate)")
-        truth = truths_from_config(cfg, names, runs, args.ref_ifo)
+        truth = truths_from_config(cfg, names, runs, args.ref_ifo, args.detectors)
     return [truth.get(k) for k in names]  # None = no line
 
 

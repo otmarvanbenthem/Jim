@@ -29,7 +29,7 @@ lambda_1 = 300.0
 lambda_2 = 450.0
 
 [waveform]
-approximant = "IMRPhenomD_NRTidalv2"
+approximant = "IMRPhenomD_NRTidalv2" #xas v3 
 f_ref = 20.0
 
 [prior]

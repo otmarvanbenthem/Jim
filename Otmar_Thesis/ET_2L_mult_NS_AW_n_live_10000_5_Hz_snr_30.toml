@@ -1,4 +1,4 @@
-seed = 42
+seed = 44
 
 [data]
 type = "injection"
@@ -63,6 +63,6 @@ n_target = 120
 
 
 [output]
-dir = "/home/ovbenthem/DATA/inj_ET_2L_5_Hz_mult_NS_AW_n_live_10000_snr_30"
+dir = "/home/ovbenthem/DATA/inj_ET_2L_5_Hz_mult_NS_AW_n_live_10000_snr_30_2"
 save_corner = true
 overwrite = true
