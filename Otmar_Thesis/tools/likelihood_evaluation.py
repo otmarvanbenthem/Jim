@@ -2,6 +2,7 @@ import time
 from pathlib import Path
 
 import corner
+from matplotlib import pyplot as plt
 import numpy as np
 import jax
 import jax.numpy as jnp
