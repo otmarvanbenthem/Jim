@@ -19,7 +19,7 @@ from jimgw.core.prior import (
     SinePrior,
 )
 from jimgw.core.single_event.detector import get_ET, get_ET_2L
-from jimgw.core.single_event.likelihood import TransientLikelihoodFD
+from jimgw.core.single_event.likelihood import TransientLikelihoodFD, MultibandedTransientLikelihoodFD
 from jimgw.core.single_event.data import Data
 from jimgw.core.single_event.waveform import RippleIMRPhenomD_NRTidalv2
 from jimgw.core.single_event.transforms import (
@@ -126,7 +126,6 @@ likelihood = TransientLikelihoodFD(
     waveform=waveform,
     f_min=f_min,
     f_max=f_max,
-   # trigger_time=gps,
     fixed_parameters=fixed_parameters
 )
 

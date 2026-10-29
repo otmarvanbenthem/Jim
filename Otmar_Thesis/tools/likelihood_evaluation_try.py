@@ -4,6 +4,7 @@ import tomllib
 import corner
 from matplotlib import pyplot as plt
 import numpy as np
+import argparse
 import jax
 import jax.numpy as jnp
 
@@ -117,25 +118,43 @@ def get_info(path):
     f_max = freq["f_max"]
     sampling_frequency = 2*f_max
     duration = cfg["data"]["duration"]
+    prior = cfg["prior"] 
     gps = cfg["data"]["trigger_time"]
     
-    return f_min, f_max, sampling_frequency, duration, gps
+    return f_min, f_max, sampling_frequency, duration, gps, prior
+
+
+
+
+# natural ranges for priors that don't list min/max in the config
+DEFAULT_RANGES = {
+    "sine": (0.0, np.pi),            # iota
+    "cosine": (-np.pi / 2, np.pi / 2),  # dec
+}
+
+def prior_range(path_config, name):
+    with open(path_config, "rb") as f:
+        spec = tomllib.load(f)["prior"][name]
+    if "min" in spec and "max" in spec:
+        return spec["min"], spec["max"]
+    return DEFAULT_RANGES[spec["type"]]
 
 
 def main():
-    path_config = Path(args.dir).expanduser() / "config.final.toml"
     parser, args = parse_args()
+    path_config = Path(args.dir).expanduser() / "config.final.toml"
+    
     params = [str(d)  for d in args.params]
-    fixed_params = truths_from_config(args.dir)
+    all_params = truths_from_config(args.dir)
   
    
-    name_det, getter = resolve_detectors(path_config, None)
+    name_det, ifos = resolve_detectors(path_config, None)
 
-    f_min, f_max, sampling_frequency, duration, gps = get_freq(path_config)
+    f_min, f_max, sampling_frequency, duration, gps, prior= get_info(path_config)
    
     waveform = RippleIMRPhenomD_NRTidalv2(f_ref=5.0) 
 
-    for ifo in getter:
+    for ifo in ifos:
         ifo.load_and_set_psd() #load psd from asd txt file
    
         ifo.simulate_and_set_noise(
@@ -149,13 +168,98 @@ def main():
         ifo.inject_signal(waveform, fixed_params)
     print("injection done")
 
-    keys_to_remove = params
-    fixed_params = {k: v for k, v in fixed_params.items() if k not in params}
+   
+    fixed_params = {k: v for k, v in all_params.items() if k not in params}
 
-    #From here: Go to evaluating the likelihood. REMEMBER: want option to do 1 or 2 params.
-    # Define a vmapped function for a fixed chunk size
+    if str(args.likelihood) == "TransientLikelihoodFD":
+        likelihood = TransientLikelihoodFD(
+            ifos,
+            waveform=waveform,
+            f_min=f_min,
+            f_max=f_max,
+            fixed_parameters=fixed_params
+            )
+        
+    elif str(args.likelihood) == "MultibandedTransientLikelihoodFD":
+        likelihood = MultibandedTransientLikelihoodFD(
+            ifos,
+            waveform=waveform,
+            f_min=f_min,
+            f_max=f_max,
+            prior=prior,
+            )
+
+    else:
+        likelihood = HeterodynedTransientLikelihoodFD(
+            ifos,
+            waveform=waveform,
+            f_min=f_min,
+            f_max=f_max,
+            prior=prior,
+            fixed_parameters=fixed_params,
+            epsilon = 0.005,
+            #likelihood_transforms=likelihood_transforms,
+        )
+
+    
+    
     chunk_size = 50
+    n_grid = 50
     f_chunk = jax.jit(jax.vmap(likelihood.evaluate))
+
+    if len(params) == 1:
+        p = params[0]
+        lo, hi = prior_range(path_config, p)
+        par_1_lin = np.linspace(lo, hi, n_grid)
+        par_1_flat = par_1_lin
+
+        n_total = par_1_flat.shape[0]
+        logL_list = []
+        for i in range(0, n_total, chunk_size):
+            chunk_par_1 = par_1_flat[i : i + chunk_size]
+            params_loop = {p: chunk_par_1}
+            val = f_chunk(params_loop)
+            logL_list.append(val)
+
+        L = np.asarray(jnp.concatenate(logL_list))
+
+        plt.plot(par_1_lin, L)
+        plt.axvline(all_params[p], color="k", ls="--")
+        plt.xlabel(p)
+        plt.ylabel(r"$\ln L$")
+
+    else:
+        p1, p2 = params
+        lo1, hi1 = prior_range(path_config, p1)
+        lo2, hi2 = prior_range(path_config, p2)
+        par_1_lin = np.linspace(lo1, hi1, n_grid)
+        par_2_lin = np.linspace(lo2, hi2, n_grid)
+
+        par_1, par_2 = np.meshgrid(par_1_lin, par_2_lin)  # shape (n2, n1)
+        par_1_flat = par_1.ravel()
+        par_2_flat = par_2.ravel()
+
+        n_total = par_1_flat.shape[0]
+        logL_list = []
+        for i in range(0, n_total, chunk_size):
+            chunk_par_1 = par_1_flat[i : i + chunk_size]
+            chunk_par_2 = par_2_flat[i : i + chunk_size]
+
+            params_loop = {p1: chunk_par_1, p2: chunk_par_2}
+            val = f_chunk(params_loop)
+            logL_list.append(val)
+
+        # Concatenate chunks and reshape
+        L = np.asarray(jnp.concatenate(logL_list)).reshape(par_1.shape)
+
+        # plot
+        plt.pcolormesh(par_1_lin, par_2_lin, L, shading="auto", cmap="viridis")
+        plt.colorbar(label=r"$\ln L$")
+        plt.plot(all_params[p1], all_params[p2], "r*", ms=12)  # injected value
+        plt.xlabel(p1)
+        plt.ylabel(p2)
+
+    plt.savefig(args.out, dpi=150, bbox_inches="tight")
 
 
 
