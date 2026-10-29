@@ -153,6 +153,9 @@ def main():
     fixed_params = {k: v for k, v in fixed_params.items() if k not in params}
 
     #From here: Go to evaluating the likelihood. REMEMBER: want option to do 1 or 2 params.
+    # Define a vmapped function for a fixed chunk size
+    chunk_size = 50
+    f_chunk = jax.jit(jax.vmap(likelihood.evaluate))
 
 
 

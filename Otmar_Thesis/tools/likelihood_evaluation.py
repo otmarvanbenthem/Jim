@@ -135,7 +135,7 @@ likelihood = TransientLikelihoodFD(
 print("Evaluating logL in chunks...")
 
 # Define a vmapped function for a fixed chunk size
-chunk_size = 25
+chunk_size = 50
 f_chunk = jax.jit(jax.vmap(likelihood.evaluate))
 
 RA, DEC = jnp.meshgrid(
@@ -164,5 +164,6 @@ dec = np.linspace(-np.pi, np.pi, 50)
 L = np.asarray(logL2)
 plt.pcolormesh(ra, dec, L, shading="auto", cmap="viridis")
 plt.colorbar(label=r"$\ln L$")
-plt.contour(mc, dl, L, levels=L.max() - np.array([0.5, 2.0, 4.5]), colors="w")
+#plt.contour(ra, dec, L, levels=L.max() - np.array([0.5, 2.0, 4.5]), colors="w")
 plt.savefig("grid.png", dpi=150, bbox_inches="tight")
+# %%
