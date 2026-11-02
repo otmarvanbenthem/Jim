@@ -16,8 +16,8 @@ def parse_args():
     p.add_argument("--input", help="path to template config file")
     p.add_argument("--outdir_data", help="path to directory to put generated data")
     p.add_argument("--outdir_config", help="path to directory for output config file")
-    p.add_argument("--detectors", nargs="+", help="list of detectors to use")
-    p.add_argument("--snr", nargs="+", type=float, default=[30], help="list of SNRs")
+    p.add_argument("--detectors", required=True, nargs="+", help="list of detectors to use")
+    p.add_argument("--snr", nargs="+", type=float, default=[30.0], help="list of SNRs")
     p.add_argument("--submit", action="store_true",
                    help="submit the jobs after running")
     args = p.parse_args()
@@ -70,4 +70,23 @@ def write_config_file(path_reference_config, detector, snr, output_path_config):
 
 def write_job_file(config_file, output_path_job,submit): #Needs to be output_path_config, compared to the reference config being the complete
 
+def main():
+    p, args = parse_args()
+    path_config = Path(args.dir).expanduser() 
+    detector_list = args.detectors   # ["ET", "ET_2L"]
+    snr_list = args.snr               # [30.0, 40.0, 50.0]
 
+    waveform, parameters, kwargs = get_info(path_config)
+
+    for detector in detector_list:
+
+                      
+        for snr in snr_list:
+
+
+
+    
+
+
+if __name__ == "__main__":
+    main()
