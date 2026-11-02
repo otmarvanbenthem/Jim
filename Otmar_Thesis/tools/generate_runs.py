@@ -58,7 +58,7 @@ SLURM_HEADER = """#!/bin/bash
 #SBATCH --gpus=1
 #SBATCH --partition=gpu_h100
 #SBATCH --mem=30G
-#SBATCH -t 120:00:00
+#SBATCH -t 40:00:00
 #SBATCH --output={slurm_output}
 """
 # Name of the slurm log. {stem} is the full run name; %j (optional) is the SLURM job id.
