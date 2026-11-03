@@ -1600,7 +1600,7 @@ def get_ET(
 
 def get_ET_2L(
     *,
-    alignment_angle: float = 42.5,
+    alignment_angle: float = 42.5, 
     earth_rotation: bool = False,
     finite_arm_length: bool = False,
 ) -> list[GroundBased3G]:
