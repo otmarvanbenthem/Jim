@@ -76,8 +76,8 @@ def parse_args():
     p.add_argument("--outdir_data", required=True, help="path to directory to put generated data")
     p.add_argument("--outdir_config", required=True,
                    help="path to directory for output config and job files")
-    p.add_argument("--detectors", required=True, nargs="+", help="list of detectors to use")
-    p.add_argument("--snr", nargs="+", type=float, default=[30.0], help="list of SNRs")
+    p.add_argument("--detectors", required=True, nargs="+", help="list of detectors to use, given as for example: ET ET_2L")
+    p.add_argument("--snr", nargs="+", type=float, default=[30.0], help="list of SNRs, given as for example: 30.0 40.0 50.0")
     p.add_argument("--submit", action="store_true", help="submit the jobs after running")
     return p, p.parse_args()
 
