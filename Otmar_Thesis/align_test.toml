@@ -8,8 +8,9 @@ duration = 6800.0
 sampling_frequency = 4096.0
 zero_noise = false
 noise_seed = 0
-earth_rotation = true
 alignment_angle = 0.0
+#earth_rotation = true
+
 
 
 
@@ -52,21 +53,18 @@ lambda_2 = { type = "uniform",   min = 0.0,   max = 1000.0}
 f_min = 5.0
 f_max = 2048.0
 
-[likelihood.heterodyne]
-# Binning: specify at most one of the two options below.
-epsilon = 0.005  # max phase change per bin in rad (default when neither is set)
-#n_bins = 5000    # fixed bin count (mutually exclusive with epsilon)
+[likelihood.multiband]
 
 
 
 [sampler]
 type = "blackjax-ns-aw"
-n_live = 2000
+n_live = 10000
 n_delete_frac = 0.5
 n_target = 120
 
 
 [output]
-dir = "/home/ovbenthem/DATA/inj_ET_2L_rot_5_Hz_rel_bin_NS_AW_n_live_2000_snr_30_e_0_005"
+dir = "/home/ovbenthem/DATA/inj_ET_2L_rot_5_Hz_mult_NS_AW_n_live_10000_snr_30_test_align"
 save_corner = true
 overwrite = true
