@@ -26,9 +26,16 @@ def build_data(
 
     For injection runs, *waveform* is required and is used to inject the signal.
     """
+    # Only forward alignment_angle when the user set it, so the default
+    # (42.5) stays defined in one place, in detector.py.
+    preset_kwargs = {}
+    if data_cfg.alignment_angle is not None:
+        preset_kwargs["alignment_angle"] = data_cfg.alignment_angle
+
     preset = get_detector_preset(
         earth_rotation=data_cfg.earth_rotation,
         finite_arm_length=data_cfg.finite_arm_length,
+        **preset_kwargs,
     )
 
     ifos: list[GroundBased2G] = []

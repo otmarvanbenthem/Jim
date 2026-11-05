@@ -46,8 +46,12 @@ class _DataBase(BaseModel):
     detectors: list[str]
     trigger_time: float = Field(allow_inf_nan=False)
     earth_rotation: bool = False
-    finite_arm_length: bool = False
-
+    finite_arm_length: bool = False 
+    
+    """Rotation (degrees) of the ET_EMR arms relative to ET_Sar. ET_2L only.
+        When omitted, ``get_ET_2L``'s default (42.5) is used."""
+    alignment_angle: Optional[float] = Field(default=None, allow_inf_nan=False)
+    
     # ------------------------------------------------------------------
     # Validation
     # ------------------------------------------------------------------
@@ -77,6 +81,11 @@ class _DataBase(BaseModel):
             raise ValueError(
                 "earth_rotation and finite_arm_length apply only to ET, ET_2L and "
                 f"CE, none of which is in data.detectors {self.detectors}."
+            )
+        if self.alignment_angle is not None and "ET_2L" not in self.detectors:
+            raise ValueError(
+                "alignment_angle applies only to ET_2L, which is not in "
+                f"data.detectors {self.detectors}."
             )
         return self
 

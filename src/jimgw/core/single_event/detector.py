@@ -1667,6 +1667,8 @@ def get_CE(
         finite_arm_length (bool, optional): Account for the arms' finite length
             relative to the wavelength. Turn on for loud signals with power at
             high frequencies. Defaults to False.
+
+
     """
     return GroundBased3G(
         "CE",
@@ -1685,11 +1687,13 @@ def get_CE(
 
 
 def get_detector_preset(
-    *, earth_rotation: bool = False, finite_arm_length: bool = False
+    *, earth_rotation: bool = False, finite_arm_length: bool = False, alignment_angle: float = 42.5,
 ) -> dict[str, GroundBased2G | list[GroundBased3G]]:
     """Return a dictionary of pre-configured detector instances.
 
     Args:
+        alignment_angle (float, optional): Passed to ``get_ET_2L``: rotation of
+             the ``ET_EMR`` arms from those of ``ET_Sar``, in degrees. Defaults to 42.5.
         earth_rotation (bool, optional): Passed to ``get_ET``, ``get_ET_2L`` and
             ``get_CE``. Defaults to False.
         finite_arm_length (bool, optional): Passed to ``get_ET``, ``get_ET_2L`` and
@@ -1710,7 +1714,7 @@ def get_detector_preset(
             earth_rotation=earth_rotation, finite_arm_length=finite_arm_length
         ),
         "ET_2L": get_ET_2L(
-            earth_rotation=earth_rotation, finite_arm_length=finite_arm_length
+            earth_rotation=earth_rotation, finite_arm_length=finite_arm_length,  alignment_angle=alignment_angle
         ),
         "CE": get_CE(
             earth_rotation=earth_rotation, finite_arm_length=finite_arm_length
