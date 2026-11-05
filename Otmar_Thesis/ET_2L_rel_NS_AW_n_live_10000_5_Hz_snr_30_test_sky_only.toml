@@ -63,6 +63,6 @@ n_target = 120
 
 
 [output]
-dir = "/home/ovbenthem/DATA/inj_ET_2L_rot_5_Hz_mult_NS_AW_n_live_10000_snr_30_test_ficed_intrinsic.toml"
+dir = "/home/ovbenthem/DATA/inj_ET_2L_rot_5_Hz_mult_NS_AW_n_live_10000_snr_30_test_sky_only"
 save_corner = true
 overwrite = true
