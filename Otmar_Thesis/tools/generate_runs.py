@@ -267,8 +267,11 @@ def main():
                 detector, waveform, parameters, target_snr=snr, **kwargs
             )
 
-            config_path = outdir_config / f"{stem}.toml"
-            job_path = outdir_config / f"{stem}.sh"
+            # one subdirectory per run, named after the stem, holding config and job file
+            run_dir = outdir_config / stem
+            run_dir.mkdir(parents=True, exist_ok=True)
+            config_path = run_dir / f"{stem}.toml"
+            job_path = run_dir / f"{stem}.sh"
 
             write_config_file(path_config, detector, d_L, outdir_data / stem, config_path)
             write_job_file(config_path, job_path, args.submit, outdir_data / stem)
