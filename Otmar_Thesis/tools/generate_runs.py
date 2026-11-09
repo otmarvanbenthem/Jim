@@ -258,6 +258,7 @@ def main():
 
     waveform, parameters, kwargs, cfg = get_info(path_config)
 
+    print("Starting loop over detectors and snrs")
     for detector in args.detectors:  # e.g. ["ET", "ET_2L"]
         for snr in args.snr:         # e.g. [30.0, 40.0, 50.0]
             stem = make_stem(cfg, detector, snr)
