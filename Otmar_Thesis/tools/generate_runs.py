@@ -14,6 +14,8 @@ Naming (config, job, output directory and slurm log all share one stem):
 """
  
 import argparse
+import copy
+import itertools
 import json
 import re
 import subprocess
@@ -78,6 +80,11 @@ def parse_args():
                    help="path to directory for output config and job files")
     p.add_argument("--detectors", required=True, nargs="+", help="list of detectors to use, given as for example: ET ET_2L")
     p.add_argument("--snr", nargs="+", type=float, default=[30.0], help="list of SNRs, given as for example: 30.0 40.0 50.0")
+    p.add_argument("--sampler_param", action="append", nargs="+", metavar=("KEY", "VALUE"), default=[],
+                   help="sampler parameter to sweep over: a key of the [sampler] table followed by one or "
+                        "more values. Repeat for several parameters; all combinations are generated. "
+                        "Example: --sampler_param n_live 1000 2000 --sampler_param n_target 500 1000. "
+                        "Parameters not given keep the value of the template config.")
     p.add_argument("--submit", action="store_true", help="submit the jobs after running")
     return p, p.parse_args()
  
@@ -131,6 +138,49 @@ def get_info(path):
     return waveform, parameters, kwargs, cfg
  
  
+# ---------------------------------------------------------------------------
+# Sampler parameter sweep
+# ---------------------------------------------------------------------------
+def _parse_value(raw, template_value):
+    """Convert a command-line string to the type of the value in the template config."""
+    if isinstance(template_value, bool):
+        if raw.lower() not in ("true", "false"):
+            raise ValueError(f"Expected true/false, got {raw!r}.")
+        return raw.lower() == "true"
+    if isinstance(template_value, int):
+        return int(float(raw)) if float(raw).is_integer() else float(raw)
+    if isinstance(template_value, float):
+        return float(raw)
+    return raw
+
+
+def get_sampler_grid(cfg, sampler_param_args):
+    """Turn the --sampler_param arguments into a list of {key: value} dicts, one per
+    combination (cartesian product). Returns [{}] if nothing was given, so the template
+    values are used. Works for any sampler: keys are just entries of the [sampler] table."""
+    if not sampler_param_args:
+        return [{}]
+    keys, value_lists = [], []
+    for key, *raw_values in sampler_param_args:
+        if key not in cfg["sampler"] or isinstance(cfg["sampler"][key], (dict, list)):
+            valid = [k for k, v in cfg["sampler"].items() if not isinstance(v, (dict, list))]
+            raise KeyError(f"'{key}' is not a scalar [sampler] parameter in the template. Available: {valid}")
+        if key in keys:
+            raise ValueError(f"--sampler_param {key} given more than once.")
+        if not raw_values:
+            raise ValueError(f"--sampler_param {key} needs at least one value.")
+        keys.append(key)
+        value_lists.append([_parse_value(v, cfg["sampler"][key]) for v in raw_values])
+    return [dict(zip(keys, combo)) for combo in itertools.product(*value_lists)]
+
+
+def with_sampler_params(cfg, sampler_params):
+    """Copy of cfg with the given [sampler] values replaced (key order is kept)."""
+    new_cfg = copy.deepcopy(cfg)
+    new_cfg["sampler"].update(sampler_params)
+    return new_cfg
+
+
 # ---------------------------------------------------------------------------
 # Naming
 # ---------------------------------------------------------------------------
@@ -217,12 +267,16 @@ def _set_value(text, key_path, value):
     raise KeyError(f"Could not find {'.'.join(key_path)} in the template config.")
  
  
-def write_config_file(path_reference_config, detector, d_L, output_data_dir, output_path_config):
-    """Copy the reference config, changing only detector, d_L and output directory."""
+def write_config_file(path_reference_config, detector, d_L, output_data_dir, output_path_config,
+                      sampler_params=None):
+    """Copy the reference config, changing only detector, d_L, output directory and the
+    given [sampler] parameters."""
     text = Path(path_reference_config).read_text()
     text = _set_value(text, KEY_D_L, round(float(d_L), 4))
     text = _set_value(text, KEY_DETECTOR, [detector])
     text = _set_value(text, KEY_OUTDIR, str(output_data_dir))
+    for key, value in (sampler_params or {}).items():
+        text = _set_value(text, ("sampler", key), value)
     output_path_config.write_text(text)
  
  
@@ -271,25 +325,30 @@ def main():
     outdir_config.mkdir(parents=True, exist_ok=True)
  
     waveform, parameters, kwargs, cfg = get_info(path_config)
- 
-    print("Starting loop over detectors and snrs")
+    sampler_grid = get_sampler_grid(cfg, args.sampler_param)  # e.g. [{"n_live": 1000}, {"n_live": 2000}]
+
+    print("Starting loop over detectors, snrs and sampler parameters")
     for detector in args.detectors:  # e.g. ["ET", "ET_2L"]
         for snr in args.snr:         # e.g. [30.0, 40.0, 50.0]
-            print(f"Generating files for detector: {detector}, with snr: {snr}")
-            stem = make_stem(cfg, detector, snr)
- 
+            # d_L only depends on detector and snr, so compute it once for all sampler settings
             d_L = get_d_L_for_target_snr(
                 detector, waveform, parameters, target_snr=snr, **kwargs
             )
- 
-            # one subdirectory per run, named after the stem, holding config and job file
-            run_dir = outdir_config / stem
-            run_dir.mkdir(parents=True, exist_ok=True)
-            config_path = run_dir / f"{stem}.toml"
-            job_path = run_dir / f"{stem}.sh"
- 
-            write_config_file(path_config, detector, d_L, outdir_data / stem, config_path)
-            write_job_file(config_path, job_path, args.submit, outdir_data / stem)
+            for sampler_params in sampler_grid:
+                print(f"Generating files for detector: {detector}, with snr: {snr}, "
+                      f"sampler parameters: {sampler_params or 'template'}")
+                run_cfg = with_sampler_params(cfg, sampler_params)
+                stem = make_stem(run_cfg, detector, snr)
+
+                # one subdirectory per run, named after the stem, holding config and job file
+                run_dir = outdir_config / stem
+                run_dir.mkdir(parents=True, exist_ok=True)
+                config_path = run_dir / f"{stem}.toml"
+                job_path = run_dir / f"{stem}.sh"
+
+                write_config_file(path_config, detector, d_L, outdir_data / stem, config_path,
+                                  sampler_params)
+                write_job_file(config_path, job_path, args.submit, outdir_data / stem)
  
  
 if __name__ == "__main__":
