@@ -1,0 +1,49 @@
+INFO | jimgw.cli | Loaded config from /home/ovbenthem/Jim/Otmar_Thesis/Job_scripts/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_6000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_6000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30.toml
+INFO | jimgw.cli | seed: 44
+INFO | jimgw.cli | data: type=injection, detectors=['ET_2L']
+INFO | jimgw.cli | waveform: IMRPhenomD_NRTidalv2 (f_ref=20.0 Hz)
+INFO | jimgw.cli | prior: 13 parameter(s): ['M_c', 'q', 's1_z', 's2_z', 'iota', 'd_L', 't_c', 'phase_c', 'psi', 'ra', 'dec', 'lambda_1', 'lambda_2']
+INFO | jimgw.cli | sampler: type=blackjax-ns-aw
+INFO | jimgw.cli | output: /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_6000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30
+INFO | jimgw.cli | JimGW 0.1.0.dev2738 | rippleGW 0.4.1
+INFO | jimgw.cli._waveform | Built waveform: IMRPhenomD_NRTidalv2(f_ref=20.0)
+INFO | jimgw.cli._data | Injected noise seeded with noise_seed=0
+INFO | jimgw.core.single_event.detector | Loading the design-sensitivity ASD for ET_Sar
+INFO | jimgw.core.single_event.detector | Loading the design-sensitivity ASD for ET_EMR
+INFO | jimgw.cli._data | Injecting signal into ET_Sar
+INFO | jimgw.core.single_event.detector | For detector ET_Sar, the injected signal has:
+INFO | jimgw.core.single_event.detector |   - Optimal SNR: 27.9154
+INFO | jimgw.core.single_event.detector |   - Match filtered SNR: 28.4698-1.7583j
+INFO | jimgw.cli._data | Injecting signal into ET_EMR
+INFO | jimgw.core.single_event.detector | For detector ET_EMR, the injected signal has:
+INFO | jimgw.core.single_event.detector |   - Optimal SNR: 13.8342
+INFO | jimgw.core.single_event.detector |   - Match filtered SNR: 14.2483+1.4141j
+INFO | jimgw.cli._data | ET_Sar: 6800.0 s @ 4096 Hz, PSD shape (13926401,)
+INFO | jimgw.cli._data | ET_EMR: 6800.0 s @ 4096 Hz, PSD shape (13926401,)
+WARNING | jimgw.cli._prior | NS AW sampler: replacing t_c ~ Uniform(-1.0000, 1.0000) in [prior] with t_det ~ Uniform(-1.0000, 1.0000) (same relative-offset bounds). To sample t_c directly instead, set [sampling] detector_frame_time = false.
+INFO | jimgw.cli._prior | Built prior: 13 parameter(s): ('M_c', 'q', 's1_z', 's2_z', 'iota', 'd_L', 't_det', 'phase_c', 'psi', 'ra', 'dec', 'lambda_1', 'lambda_2')
+INFO | jimgw.cli | sample transforms: ['SkyFrameToDetectorFrameSkyPositionTransform', 'BoundToBound', 'BoundToBound', 'BoundToBound', 'BoundToBound', 'CosineTransform', 'BoundToBound', 'BijectiveTransform', 'BoundToBound', 'BoundToBound', 'BoundToBound', 'BoundToBound', 'BoundToBound', 'BoundToBound', 'CosineTransform', 'BoundToBound']
+INFO | jimgw.cli | likelihood transforms: ['ConditionalBijectiveTransform', 'BijectiveTransform']
+INFO | jimgw.cli | periodic parameters: ['phase_c_unit', 'psi_unit', 'azimuth_unit']
+INFO | jimgw.cli._likelihood | time_offset inferred from t_det prior: 3.0213 s
+INFO | jimgw.cli._likelihood | delta_f_end inferred from t_det prior: 102.1738 Hz
+INFO | jimgw.core.single_event.likelihood | Initializing multi-banded likelihood...
+INFO | jimgw.core.single_event.likelihood | reference_chirp_mass inferred from M_c prior minimum: 1.0500 M_sun
+INFO | jimgw.core.single_event.likelihood | Frequency range divided into 12 bands with intervals: 1/6800.0 Hz, 1/3400.0 Hz, 1/1700.0 Hz, 1/850.0 Hz, 1/425.0 Hz, 1/212.5 Hz, 1/106.25 Hz, 1/53.125 Hz, 1/26.5625 Hz, 1/13.28125 Hz, 1/6.640625 Hz, 1/3.3203125 Hz
+INFO | jimgw.core.single_event.likelihood | Pre-computing linear coefficients for ET_Sar
+INFO | jimgw.core.single_event.likelihood | Pre-computing linear coefficients for ET_EMR
+INFO | jimgw.core.single_event.likelihood | Multi-banding setup complete with 12 bands
+INFO | jimgw.cli._likelihood | Built multiband likelihood: f_min=5.0, f_max=2048.0, reference_chirp_mass=1.0500 M_sun
+INFO | jimgw.core.jim | Using sample transforms.
+INFO | jimgw.cli._jim | Built Jim (sampler=blackjax-ns-aw, seed=44)
+INFO | jax._src.compilation_cache | Resetting cache at <empty>.
+INFO | jax._src.compilation_cache | Resetting cache at /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_6000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/jax_cache.
+INFO | jimgw.cli | Sampling complete.
+INFO | jimgw.cli._output | Removed existing output directory: /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_6000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30
+INFO | jimgw.cli._output | Saved 10000 samples to /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_6000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/samples.npz
+INFO | jimgw.cli._output | Saved diagnostics to /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_6000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/diagnostics.json
+INFO | jimgw.cli._output | Saved array diagnostics to /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_6000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/diagnostics.npz
+INFO | jimgw.cli._output | Saved resolved config to /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_6000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/config.final.toml
+WARNING | root | Too few points to create valid contours
+INFO | jimgw.cli._output | Saved corner plot to /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_6000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/corner.png
+Python step took 42803 s
