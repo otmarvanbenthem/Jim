@@ -37,19 +37,13 @@ INFO | jimgw.cli._likelihood | Built multiband likelihood: f_min=5.0, f_max=2048
 INFO | jimgw.core.jim | Using sample transforms.
 INFO | jimgw.cli._jim | Built Jim (sampler=blackjax-ns-aw, seed=44)
 INFO | jax._src.compilation_cache | Resetting cache at <empty>.
-/gpfs/home3/ovbenthem/Jim/.venv/lib64/python3.13/site-packages/anesthetic/samples.py:1747: RuntimeWarning: 1 out of 140000 samples have logL <= logL_birth,
-0 of which have logL == logL_birth.
-This may just indicate numerical rounding errors at the peak of the likelihood, but further investigation of the chains files is recommended.
-Dropping the invalid samples.
-  warnings.warn(
 INFO | jax._src.compilation_cache | Resetting cache at /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/jax_cache.
 INFO | jimgw.cli | Sampling complete.
 INFO | jimgw.cli._output | Removed existing output directory: /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30
-WARNING | jimgw.core.jim | Requested 10000 samples but only 8028 available. Returning all available samples.
-INFO | jimgw.cli._output | Saved 8028 samples to /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/samples.npz
+WARNING | jimgw.core.jim | Requested 10000 samples but only 5986 available. Returning all available samples.
+INFO | jimgw.cli._output | Saved 5986 samples to /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/samples.npz
 INFO | jimgw.cli._output | Saved diagnostics to /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/diagnostics.json
 INFO | jimgw.cli._output | Saved array diagnostics to /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/diagnostics.npz
 INFO | jimgw.cli._output | Saved resolved config to /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/config.final.toml
-WARNING | root | Too few points to create valid contours
 INFO | jimgw.cli._output | Saved corner plot to /gpfs/home3/ovbenthem/DATA/ET_2L_mult_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/corner.png
-Python step took 28161 s
+Python step took 27636 s

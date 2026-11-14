@@ -12,12 +12,12 @@ INFO | jimgw.core.single_event.detector | Loading the design-sensitivity ASD for
 INFO | jimgw.core.single_event.detector | Loading the design-sensitivity ASD for ET_EMR
 INFO | jimgw.cli._data | Injecting signal into ET_Sar
 INFO | jimgw.core.single_event.detector | For detector ET_Sar, the injected signal has:
-INFO | jimgw.core.single_event.detector |   - Optimal SNR: 27.2095
-INFO | jimgw.core.single_event.detector |   - Match filtered SNR: 27.4736-1.6209j
+INFO | jimgw.core.single_event.detector |   - Optimal SNR: 27.9154
+INFO | jimgw.core.single_event.detector |   - Match filtered SNR: 28.4698-1.7583j
 INFO | jimgw.cli._data | Injecting signal into ET_EMR
 INFO | jimgw.core.single_event.detector | For detector ET_EMR, the injected signal has:
-INFO | jimgw.core.single_event.detector |   - Optimal SNR: 12.6350
-INFO | jimgw.core.single_event.detector |   - Match filtered SNR: 13.5944+0.8699j
+INFO | jimgw.core.single_event.detector |   - Optimal SNR: 13.8342
+INFO | jimgw.core.single_event.detector |   - Match filtered SNR: 14.2483+1.4141j
 INFO | jimgw.cli._data | ET_Sar: 6800.0 s @ 4096 Hz, PSD shape (13926401,)
 INFO | jimgw.cli._data | ET_EMR: 6800.0 s @ 4096 Hz, PSD shape (13926401,)
 WARNING | jimgw.cli._prior | NS AW sampler: replacing t_c ~ Uniform(-1.0000, 1.0000) in [prior] with t_det ~ Uniform(-1.0000, 1.0000) (same relative-offset bounds). To sample t_c directly instead, set [sampling] detector_frame_time = false.
@@ -28,21 +28,21 @@ INFO | jimgw.cli | periodic parameters: ['phase_c_unit', 'psi_unit', 'azimuth_un
 INFO | jimgw.core.single_event.likelihood | Initializing heterodyned likelihood..
 INFO | jimgw.core.single_event.likelihood | No reference parameters are provided, finding it...
 INFO | jimgw.core.single_event.likelihood | Running evosax CMA-ES: 13D, popsize=500, n_steps=1000
-W1111 09:04:10.272680 1153914 hlo_rematerialization.cc:3402] Can't reduce memory use below 66.35GiB (71248429406 bytes) by rematerialization; only reduced to 311.19GiB (334140156668 bytes), down from 310.78GiB (333695651732 bytes) originally
-INFO | jimgw.core.single_event.likelihood | CMA-ES needs 333.6 GB of device memory for the whole population, 64.9 GB is available; evaluating it in batches of 97
-INFO | jimgw.core.single_event.likelihood | The reference parameters are {'M_c': 1.1977058391440192, 's1_z': -0.13916504383356024, 's2_z': 0.11852428270143334, 'iota': 1.5802013460294433, 'd_L': 1499.4966330681773, 'phase_c': 3.4854200864518825, 'psi': 1.646467348694983, 'ra': 3.574814232782975, 'dec': 0.1977995576748792, 'lambda_1': 758.7057487108813, 'lambda_2': 741.0461955580911, 't_c': 0.018867796619796595, 'eta': 0.24281593962964276}
+W1113 22:06:43.144685 3475002 hlo_rematerialization.cc:3402] Can't reduce memory use below 66.35GiB (71248429406 bytes) by rematerialization; only reduced to 1.31TiB (1445087915964 bytes), down from 1.31TiB (1444865409508 bytes) originally
+INFO | jimgw.core.single_event.likelihood | CMA-ES needs 1444.8 GB of device memory for the whole population, 65.1 GB is available; evaluating it in batches of 22
+INFO | jimgw.core.single_event.likelihood | The reference parameters are {'M_c': 1.197752943074268, 's1_z': -0.11685523466167103, 's2_z': 0.10763039951977883, 'iota': 1.5585609252325474, 'd_L': 1427.521395566815, 'phase_c': 3.2808905926877547, 'psi': 1.4676671046344079, 'ra': 3.5097010995992695, 'dec': -0.28734707933329906, 'lambda_1': 996.3773106743301, 'lambda_2': 230.58152846700057, 't_c': 0.01321961957474304, 'eta': 0.24548507987724086}
 INFO | jimgw.core.single_event.likelihood | Constructing reference waveforms..
-INFO | jimgw.cli._likelihood | Built heterodyne likelihood: f_min=5.0, f_max=2048.0, n_bins=5202
+INFO | jimgw.cli._likelihood | Built heterodyne likelihood: f_min=5.0, f_max=2048.0, n_bins=5404
 INFO | jimgw.core.jim | Using sample transforms.
 INFO | jimgw.cli._jim | Built Jim (sampler=blackjax-ns-aw, seed=44)
 INFO | jax._src.compilation_cache | Resetting cache at <empty>.
 INFO | jax._src.compilation_cache | Resetting cache at /gpfs/home3/ovbenthem/DATA/ET_2L_rel_e_0_005_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/jax_cache.
 INFO | jimgw.cli | Sampling complete.
 INFO | jimgw.cli._output | Removed existing output directory: /gpfs/home3/ovbenthem/DATA/ET_2L_rel_e_0_005_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30
-WARNING | jimgw.core.jim | Requested 10000 samples but only 5429 available. Returning all available samples.
-INFO | jimgw.cli._output | Saved 5429 samples to /gpfs/home3/ovbenthem/DATA/ET_2L_rel_e_0_005_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/samples.npz
+WARNING | jimgw.core.jim | Requested 10000 samples but only 1804 available. Returning all available samples.
+INFO | jimgw.cli._output | Saved 1804 samples to /gpfs/home3/ovbenthem/DATA/ET_2L_rel_e_0_005_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/samples.npz
 INFO | jimgw.cli._output | Saved diagnostics to /gpfs/home3/ovbenthem/DATA/ET_2L_rel_e_0_005_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/diagnostics.json
 INFO | jimgw.cli._output | Saved array diagnostics to /gpfs/home3/ovbenthem/DATA/ET_2L_rel_e_0_005_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/diagnostics.npz
 INFO | jimgw.cli._output | Saved resolved config to /gpfs/home3/ovbenthem/DATA/ET_2L_rel_e_0_005_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/config.final.toml
 INFO | jimgw.cli._output | Saved corner plot to /gpfs/home3/ovbenthem/DATA/ET_2L_rel_e_0_005_NS_AW_type_blackjax_ns_aw_n_live_4000_n_delete_frac_0_5_n_target_120_5_Hz_2048_Hz_snr_30/corner.png
-Python step took 6958 s
+Python step took 15801 s
