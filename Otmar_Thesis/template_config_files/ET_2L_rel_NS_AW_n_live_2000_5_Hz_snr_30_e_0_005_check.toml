@@ -61,7 +61,7 @@ epsilon = 0.005  # max phase change per bin in rad (default when neither is set)
 
 [sampler]
 type = "blackjax-ns-aw"
-n_live = 4000
+n_live = 2000
 n_delete_frac = 0.5
 n_target = 120
 
