@@ -11,6 +11,10 @@ Naming (config, job, output directory and slurm log all share one stem):
   job    : <stem>.sh
   outdir : <stem>/
   slurm  : slurm-<stem>.out
+
+Parameter sweeps (all combinations are generated, parameters not given keep the template value):
+  --sampler_param KEY VALUE [VALUE ...]     a key of the [sampler] table
+  --likelihood_param KEY VALUE [VALUE ...]  a key of the fast likelihood table, e.g. [likelihood.heterodyne]
 """
  
 import argparse
@@ -49,6 +53,14 @@ SAMPLER_ABBREVIATIONS = {
 # They are read from the config file, so the name always matches what is actually run.
 # Fast likelihood parameters are all numeric entries of its sub-table; this maps key -> short label.
 FAST_LIKELIHOOD_PARAM_LABELS = {"epsilon": "e"}
+# Fast likelihood parameters that may be swept with --likelihood_param even when they are not (or
+# commented out) in the template: {key: example value, used to pick the type}. Such a key is added
+# to the [likelihood.<fast likelihood>] table of the generated config.
+FAST_LIKELIHOOD_OPTIONAL_PARAMS = {"n_bins": 1}
+# Groups of fast likelihood parameters that exclude each other (the template says: specify at most
+# one of epsilon / n_bins). Sweeping one key removes the other keys of its group from the generated
+# config, and two keys of the same group cannot be swept in the same run of this script.
+FAST_LIKELIHOOD_EXCLUSIVE = [("epsilon", "n_bins")]
 # Sampler parameters are all numeric entries of [sampler]; this maps key -> short label (optional).
 SAMPLER_PARAM_LABELS = {}
  
@@ -85,6 +97,13 @@ def parse_args():
                         "more values. Repeat for several parameters; all combinations are generated. "
                         "Example: --sampler_param n_live 1000 2000 --sampler_param n_target 500 1000. "
                         "Parameters not given keep the value of the template config.")
+    p.add_argument("--likelihood_param", action="append", nargs="+", metavar=("KEY", "VALUE"), default=[],
+                   help="fast likelihood parameter to sweep over: a key of the fast likelihood table "
+                        "(e.g. [likelihood.heterodyne]) followed by one or more values. Repeat for several "
+                        "parameters; all combinations are generated (also combined with --sampler_param). "
+                        "Example: --likelihood_param epsilon 0.01 0.005. "
+                        "epsilon and n_bins exclude each other: sweep one or the other, and the other "
+                        "is removed from the generated config. Parameters not given keep the template value.")
     p.add_argument("--submit", action="store_true", help="submit the jobs after running")
     return p, p.parse_args()
  
@@ -154,30 +173,86 @@ def _parse_value(raw, template_value):
     return raw
 
 
-def get_sampler_grid(cfg, sampler_param_args):
-    """Turn the --sampler_param arguments into a list of {key: value} dicts, one per
-    combination (cartesian product). Returns [{}] if nothing was given, so the template
-    values are used. Works for any sampler: keys are just entries of the [sampler] table."""
-    if not sampler_param_args:
+def _build_grid(table, param_args, flag, label, optional=None):
+    """Turn repeated `KEY VALUE [VALUE ...]` arguments into a list of {key: value} dicts, one
+    per combination (cartesian product). Returns [{}] if nothing was given, so the template
+    values are used. Keys must be scalar entries of `table`, or keys of `optional`
+    ({key: example value}) that may be added to it. `flag` and `label` are for error messages."""
+    if not param_args:
         return [{}]
+    optional = optional or {}
+    scalar = {k: v for k, v in table.items() if not isinstance(v, (dict, list))}
     keys, value_lists = [], []
-    for key, *raw_values in sampler_param_args:
-        if key not in cfg["sampler"] or isinstance(cfg["sampler"][key], (dict, list)):
-            valid = [k for k, v in cfg["sampler"].items() if not isinstance(v, (dict, list))]
-            raise KeyError(f"'{key}' is not a scalar [sampler] parameter in the template. Available: {valid}")
+    for key, *raw_values in param_args:
+        if key in scalar:
+            template_value = scalar[key]
+        elif key in optional:
+            template_value = optional[key]
+        else:
+            valid = list(scalar) + [k for k in optional if k not in scalar]
+            raise KeyError(f"'{key}' is not a scalar {label} parameter in the template. Available: {valid}")
         if key in keys:
-            raise ValueError(f"--sampler_param {key} given more than once.")
+            raise ValueError(f"{flag} {key} given more than once.")
         if not raw_values:
-            raise ValueError(f"--sampler_param {key} needs at least one value.")
+            raise ValueError(f"{flag} {key} needs at least one value.")
         keys.append(key)
-        value_lists.append([_parse_value(v, cfg["sampler"][key]) for v in raw_values])
+        value_lists.append([_parse_value(v, template_value) for v in raw_values])
     return [dict(zip(keys, combo)) for combo in itertools.product(*value_lists)]
+
+
+def get_sampler_grid(cfg, sampler_param_args):
+    """Grid of --sampler_param combinations. Works for any sampler: keys are just entries
+    of the [sampler] table."""
+    return _build_grid(cfg["sampler"], sampler_param_args, "--sampler_param", "[sampler]")
+
+
+def _fast_likelihood_name(cfg):
+    """Name of the fast likelihood: the first sub-table of [likelihood], e.g. 'heterodyne'."""
+    subs = [k for k, v in cfg["likelihood"].items() if isinstance(v, dict)]
+    if not subs:
+        raise KeyError("The template has no fast likelihood sub-table under [likelihood].")
+    return subs[0]
+
+
+def _excluded_keys(keys):
+    """Keys that must be dropped from the config when `keys` are set (FAST_LIKELIHOOD_EXCLUSIVE)."""
+    keys = set(keys)
+    return {other for group in FAST_LIKELIHOOD_EXCLUSIVE if keys & set(group)
+            for other in group if other not in keys}
+
+
+def get_likelihood_grid(cfg, likelihood_param_args):
+    """Grid of --likelihood_param combinations: keys are entries of the fast likelihood
+    table, e.g. [likelihood.heterodyne]."""
+    if not likelihood_param_args:
+        return [{}]
+    name = _fast_likelihood_name(cfg)
+    swept = {key for key, *_ in likelihood_param_args}
+    for group in FAST_LIKELIHOOD_EXCLUSIVE:
+        clash = sorted(swept & set(group))
+        if len(clash) > 1:
+            raise ValueError(f"--likelihood_param {' and '.join(clash)} exclude each other, "
+                             f"generate them in separate runs of this script.")
+    return _build_grid(cfg["likelihood"][name], likelihood_param_args, "--likelihood_param",
+                       f"[likelihood.{name}]", FAST_LIKELIHOOD_OPTIONAL_PARAMS)
 
 
 def with_sampler_params(cfg, sampler_params):
     """Copy of cfg with the given [sampler] values replaced (key order is kept)."""
     new_cfg = copy.deepcopy(cfg)
     new_cfg["sampler"].update(sampler_params)
+    return new_cfg
+
+
+def with_likelihood_params(cfg, likelihood_params):
+    """Copy of cfg with the given fast likelihood values set. Parameters that exclude
+    the given ones (e.g. epsilon when n_bins is set) are removed."""
+    new_cfg = copy.deepcopy(cfg)
+    if likelihood_params:
+        table = new_cfg["likelihood"][_fast_likelihood_name(cfg)]
+        for key in _excluded_keys(likelihood_params):
+            table.pop(key, None)
+        table.update(likelihood_params)
     return new_cfg
 
 
@@ -265,18 +340,69 @@ def _set_value(text, key_path, value):
             lines[i] = f"{key} = {json.dumps(value)}" + (comment.group(0) if comment else "")
             return "\n".join(lines) + "\n"
     raise KeyError(f"Could not find {'.'.join(key_path)} in the template config.")
+
+
+def _section_bounds(lines, section):
+    """(index of the [section] header, index of the next header or end of file)."""
+    header = re.compile(r"^\s*\[\s*" + r"\s*\.\s*".join(map(re.escape, section)) + r"\s*\]\s*(#.*)?$")
+    any_header = re.compile(r"^\s*\[")
+    for start, line in enumerate(lines):
+        if header.match(line):
+            end = next((j for j in range(start + 1, len(lines)) if any_header.match(lines[j])), len(lines))
+            return start, end
+    raise KeyError(f"Could not find section [{'.'.join(section)}] in the template config.")
+
+
+def _add_value(text, key_path, value):
+    """Add `key = value` at the end of its [section], after the last non-empty line
+    (so before the next section)."""
+    *section, key = key_path
+    lines = text.splitlines()
+    start, end = _section_bounds(lines, section)
+    last = end - 1
+    while last > start and not lines[last].strip():
+        last -= 1
+    lines.insert(last + 1, f"{key} = {json.dumps(value)}")
+    return "\n".join(lines) + "\n"
+
+
+def _remove_key(text, key_path):
+    """Delete the line `key = ...` from its [section]. Does nothing if the key is not there
+    (a commented-out `#key = ...` is left alone)."""
+    *section, key = key_path
+    lines = text.splitlines()
+    start, end = _section_bounds(lines, section)
+    for i in range(start + 1, end):
+        if re.match(rf"^\s*{re.escape(key)}\s*=", lines[i]):
+            del lines[i]
+            break
+    return "\n".join(lines) + "\n"
+
+
+def _set_or_add_value(text, key_path, value):
+    """Like _set_value, but adds the key to its section if it is not there yet."""
+    try:
+        return _set_value(text, key_path, value)
+    except KeyError:
+        return _add_value(text, key_path, value)
  
  
 def write_config_file(path_reference_config, detector, d_L, output_data_dir, output_path_config,
-                      sampler_params=None):
+                      sampler_params=None, likelihood_params=None):
     """Copy the reference config, changing only detector, d_L, output directory and the
-    given [sampler] parameters."""
+    given [sampler] and fast likelihood parameters."""
     text = Path(path_reference_config).read_text()
     text = _set_value(text, KEY_D_L, round(float(d_L), 4))
     text = _set_value(text, KEY_DETECTOR, [detector])
     text = _set_value(text, KEY_OUTDIR, str(output_data_dir))
     for key, value in (sampler_params or {}).items():
         text = _set_value(text, ("sampler", key), value)
+    if likelihood_params:
+        fast_section = ("likelihood", _fast_likelihood_name(tomllib.loads(text)))
+        for key in sorted(_excluded_keys(likelihood_params)):
+            text = _remove_key(text, (*fast_section, key))
+        for key, value in likelihood_params.items():
+            text = _set_or_add_value(text, (*fast_section, key), value)
     output_path_config.write_text(text)
  
  
@@ -326,18 +452,20 @@ def main():
  
     waveform, parameters, kwargs, cfg = get_info(path_config)
     sampler_grid = get_sampler_grid(cfg, args.sampler_param)  # e.g. [{"n_live": 1000}, {"n_live": 2000}]
+    likelihood_grid = get_likelihood_grid(cfg, args.likelihood_param)  # e.g. [{"epsilon": 0.01}, {"epsilon": 0.005}]
 
-    print("Starting loop over detectors, snrs and sampler parameters")
+    print("Starting loop over detectors, snrs, sampler parameters and fast likelihood parameters")
     for detector in args.detectors:  # e.g. ["ET", "ET_2L"]
         for snr in args.snr:         # e.g. [30.0, 40.0, 50.0]
             # d_L only depends on detector and snr, so compute it once for all sampler settings
             d_L = get_d_L_for_target_snr(
                 detector, waveform, parameters, target_snr=snr, **kwargs
             )
-            for sampler_params in sampler_grid:
+            for sampler_params, likelihood_params in itertools.product(sampler_grid, likelihood_grid):
                 print(f"Generating files for detector: {detector}, with snr: {snr}, "
-                      f"sampler parameters: {sampler_params or 'template'}")
-                run_cfg = with_sampler_params(cfg, sampler_params)
+                      f"sampler parameters: {sampler_params or 'template'}, "
+                      f"likelihood parameters: {likelihood_params or 'template'}")
+                run_cfg = with_likelihood_params(with_sampler_params(cfg, sampler_params), likelihood_params)
                 stem = make_stem(run_cfg, detector, snr)
 
                 # one subdirectory per run, named after the stem, holding config and job file
@@ -347,7 +475,7 @@ def main():
                 job_path = run_dir / f"{stem}.sh"
 
                 write_config_file(path_config, detector, d_L, outdir_data / stem, config_path,
-                                  sampler_params)
+                                  sampler_params, likelihood_params)
                 write_job_file(config_path, job_path, args.submit, outdir_data / stem)
  
  
