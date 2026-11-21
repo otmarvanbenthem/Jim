@@ -60,6 +60,8 @@ type = "blackjax-swig"
 blocks = [["M_c", "q", "lambda_1", "lambda_2"],["s1_z", "s2_z"],["iota"],["d_L"],["t_det"],["phase_c"],["zenith", "azimuth"],["psi"]]
 n_live = 2000
 n_delete_frac = 0.5
+num_inner_steps_per_dim = 1
+num_gibbs_sweeps = 1
 
 
 
