@@ -23,6 +23,7 @@ import itertools
 import json
 import re
 import subprocess
+import time
 import tomllib
 from pathlib import Path
  
@@ -419,6 +420,26 @@ def _cluster_path(path):
     return f"{WORKDIR.rstrip('/')}/{rel}"
  
  
+FAILED = []  # job files that could not be submitted, reported at the end of main()
+
+
+def submit_job(job_path, retries=5, wait=10):
+    """Submit with sbatch, retrying on transient errors. Returns True on success."""
+    for attempt in range(1, retries + 1):
+        res = subprocess.run(
+            ["sbatch", str(job_path)],
+            capture_output=True, text=True,
+            cwd=job_path.parent,  # slurm log lands next to the job file, not in the cwd
+        )
+        if res.returncode == 0:
+            print(f"  submitted {job_path.name}: {res.stdout.strip()}")
+            return True
+        print(f"  sbatch failed (attempt {attempt}/{retries}): {res.stderr.strip()}")
+        time.sleep(wait * attempt)
+    FAILED.append(job_path)
+    return False
+
+
 def write_job_file(config_file, output_path_job, submit, output_dir):
     """Write the SLURM job file for `config_file` (the generated config, not the template)."""
     config_file = Path(config_file)
@@ -440,7 +461,8 @@ echo "$runtime" > {output_dir}/runtime_seconds.txt
 """
     output_path_job.write_text(body)
     if submit:
-        subprocess.run(["sbatch", str(output_path_job)], check=True)
+        submit_job(output_path_job)
+        time.sleep(1)  # don't hammer the scheduler
  
  
 def main():
@@ -477,7 +499,12 @@ def main():
                 write_config_file(path_config, detector, d_L, outdir_data / stem, config_path,
                                   sampler_params, likelihood_params)
                 write_job_file(config_path, job_path, args.submit, outdir_data / stem)
- 
- 
+
+    if FAILED:
+        print("\nThese jobs were NOT submitted:")
+        for f in FAILED:
+            print(f"  sbatch {f}")
+
+
 if __name__ == "__main__":
     main()
