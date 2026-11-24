@@ -5,7 +5,7 @@
 #SBATCH --gpus=1
 #SBATCH --partition=gpu_h100
 #SBATCH --mem=30G
-#SBATCH -t 40:00:00
+#SBATCH -t 05:00:00
 #SBATCH --output=slurm-ET_2L_mult_blackjax_swig_type_blackjax_swig_n_live_4000_n_delete_frac_0_5_num_inner_steps_per_dim_2_num_gibbs_sweeps_2_5_Hz_2048_Hz_snr_30.out
 
 # Silence the JAX cache warning
